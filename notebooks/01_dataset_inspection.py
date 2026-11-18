@@ -210,3 +210,11 @@ sns.heatmap(
 plt.title("Feature Correlation Heatmap")
 plt.tight_layout()
 plt.show()
+
+# Top 10 Features Correlated with SalePrice
+saleprice_corr = correlation["SalePrice"].sort_values(
+    ascending=False
+)
+
+print("\nTop 10 Features Correlated with SalePrice:")
+print(saleprice_corr.drop("SalePrice").head(10))
