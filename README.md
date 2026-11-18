@@ -4,9 +4,9 @@ An end-to-end Machine Learning project focused on predicting residential house p
 
 ## Project Overview
 
-The goal of this project is to understand the complete Machine Learning workflow, from dataset inspection and exploratory data analysis to model training and evaluation.
+The goal of this project is to understand and implement the complete Machine Learning workflow, from dataset inspection and Exploratory Data Analysis (EDA) to data preprocessing, model training, and evaluation.
 
-The project uses the Ames Housing dataset to predict house sale prices.
+This project uses the Ames Housing dataset to predict residential house sale prices.
 
 ## Technologies Used
 
@@ -46,26 +46,44 @@ House-Price-Prediction-Using-ML/
 └── requirements.txt
 ```
 
-## Progress
+## Project Progress
 
 ### Completed
+
 - Project repository and folder structure created.
 - Ames Housing dataset added.
-- Dataset loaded using Pandas.
-- Dataset dimensions and column information inspected.
-- Missing values identified and analyzed.
+- Dataset loaded and inspected using Pandas.
+- Dataset dimensions and column information analyzed.
+- Missing values identified and examined.
 - Duplicate row check completed (0 duplicate rows).
 - Statistical summary of `SalePrice` generated.
+- Initial Exploratory Data Analysis (EDA) completed.
+
+### EDA Analysis Completed
+
+1. SalePrice Distribution Analysis.
+2. Living Area vs SalePrice.
+3. Overall Quality vs SalePrice.
+4. Garage Area vs SalePrice.
+5. Year Built vs SalePrice.
+6. Correlation Analysis using a numerical feature heatmap.
+7. Top 10 numerical features correlated with `SalePrice` identified.
+
+**Key EDA Observation:** `Overall Qual` has the strongest positive correlation with `SalePrice` among the numerical features, with a correlation coefficient of approximately 0.799.
 
 ### Upcoming
-- Exploratory Data Analysis (EDA).
+
+- Missing values visualization and detailed analysis.
+- Outlier analysis.
+- Categorical feature analysis.
 - Data cleaning and preprocessing.
 - Feature engineering.
 - Train-test split (80% training, 20% testing).
-- Linear Regression model.
-- Random Forest Regressor.
-- Model evaluation and comparison.
-- Streamlit application.
+- Linear Regression model implementation.
+- Random Forest Regressor implementation.
+- Model evaluation using MAE, RMSE, and R².
+- Model comparison.
+- Streamlit application development.
 
 ## Learning Objective
 
@@ -73,4 +91,4 @@ To build a practical understanding of Machine Learning concepts by developing a 
 
 ---
 
-**Note:** This project uses US housing data from Ames, Iowa. It is an educational ML project and is not designed to estimate current Indian property prices.
+**Note:** This project uses US housing data from Ames, Iowa. It is an educational Machine Learning project and is not designed to estimate current Indian property prices.
