@@ -102,3 +102,111 @@ plt.ylabel("Number of Houses")
 
 plt.tight_layout()
 plt.show()
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Visualize SalePrice Distribution
+plt.figure(figsize=(10, 5))
+
+sns.histplot(df["SalePrice"], bins=40, kde=True)
+
+plt.title("Distribution of House Sale Prices")
+plt.xlabel("Sale Price ($)")
+plt.ylabel("Number of Houses")
+
+plt.tight_layout()
+plt.show()
+
+
+
+# Relationship between Living Area and Sale Price
+
+plt.figure(figsize=(8, 5))
+
+sns.scatterplot(
+    data=df,
+    x="Gr Liv Area",
+    y="SalePrice"
+)
+
+plt.title("Living Area vs House Sale Price")
+plt.xlabel("Living Area (Square Feet)")
+plt.ylabel("Sale Price ($)")
+
+plt.tight_layout()
+plt.show()
+
+
+# Relationship between Overall Quality and Sale Price
+plt.figure(figsize=(8, 5))
+
+sns.scatterplot(
+    data=df,
+    x="Overall Qual",
+    y="SalePrice",
+    s=15,
+    alpha=0.5
+)
+
+plt.title("Overall Quality vs House Sale Price")
+plt.xlabel("Overall Quality (1-10)")
+plt.ylabel("Sale Price ($)")
+
+plt.tight_layout()
+plt.show()
+
+# Relationship between Garage Area and Sale Price
+plt.figure(figsize=(8, 5))
+
+sns.scatterplot(
+    data=df,
+    x="Garage Area",
+    y="SalePrice",
+    s=15,
+    alpha=0.5
+)
+
+plt.title("Garage Area vs House Sale Price")
+plt.xlabel("Garage Area (Square Feet)")
+plt.ylabel("Sale Price ($)")
+
+plt.tight_layout()
+plt.show()
+
+# Relationship between Year Built and Sale Price
+plt.figure(figsize=(8, 5))
+
+sns.scatterplot(
+    data=df,
+    x="Year Built",
+    y="SalePrice",
+    s=15,
+    alpha=0.5
+)
+
+plt.title("Year Built vs House Sale Price")
+plt.xlabel("Year Built")
+plt.ylabel("Sale Price ($)")
+
+plt.tight_layout()
+plt.show()
+
+# Correlation Analysis
+numeric_df = df.select_dtypes(include=["number"])
+
+correlation = numeric_df.corr()
+
+plt.figure(figsize=(14, 10))
+
+sns.heatmap(
+    correlation,
+    cmap="coolwarm",
+    annot=False,
+    linewidths=0.5
+)
+
+plt.title("Feature Correlation Heatmap")
+plt.tight_layout()
+plt.show()
