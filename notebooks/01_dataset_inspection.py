@@ -218,3 +218,79 @@ saleprice_corr = correlation["SalePrice"].sort_values(
 
 print("\nTop 10 Features Correlated with SalePrice:")
 print(saleprice_corr.drop("SalePrice").head(10))
+
+# Missing Values Visualization
+
+missing_percent = (df.isnull().mean() * 100)
+
+missing_percent = missing_percent[
+    missing_percent > 0
+].sort_values(ascending=False).head(10)
+
+plt.figure(figsize=(10, 6))
+
+sns.barplot(
+    x=missing_percent.values,
+    y=missing_percent.index
+)
+
+plt.title("Top 10 Columns with Missing Values")
+plt.xlabel("Missing Values (%)")
+plt.ylabel("Features")
+
+plt.tight_layout()
+plt.show()
+
+# Outlier Analysis - SalePrice
+
+plt.figure(figsize=(10, 5))
+
+sns.boxplot(x=df["SalePrice"])
+
+plt.title("Outlier Analysis of SalePrice")
+plt.xlabel("Sale Price ($)")
+
+plt.tight_layout()
+plt.show()
+
+
+# Outlier Analysis - IQR Method
+
+Q1 = df["SalePrice"].quantile(0.25)
+Q3 = df["SalePrice"].quantile(0.75)
+
+IQR = Q3 - Q1
+
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+outliers = df[
+    (df["SalePrice"] < lower_bound) |
+    (df["SalePrice"] > upper_bound)
+]
+
+print("\nSalePrice Outlier Analysis")
+print("Q1:", Q1)
+print("Q3:", Q3)
+print("IQR:", IQR)
+print("Lower Bound:", lower_bound)
+print("Upper Bound:", upper_bound)
+print("Total Potential Outliers:", len(outliers))
+
+
+outlier_percentage = (len(outliers) / len(df)) * 100
+
+print("Outlier Percentage:", outlier_percentage, "%")
+
+
+# Outlier Analysis - Gr Liv Area
+
+plt.figure(figsize=(10, 5))
+
+sns.boxplot(x=df["Gr Liv Area"])
+
+plt.title("Outlier Analysis of Gr Liv Area")
+plt.xlabel("Above Ground Living Area (sq ft)")
+
+plt.tight_layout()
+plt.show()
