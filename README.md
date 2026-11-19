@@ -68,14 +68,24 @@ House-Price-Prediction-Using-ML/
 5. Year Built vs SalePrice.
 6. Correlation Analysis using a numerical feature heatmap.
 7. Top 10 numerical features correlated with `SalePrice` identified.
+8. Missing Values Visualization (Top 10 columns).
+9. SalePrice Outlier Analysis using a Boxplot.
+10. SalePrice Outlier Detection using the IQR Method.
 
-**Key EDA Observation:** `Overall Qual` has the strongest positive correlation with `SalePrice` among the numerical features, with a correlation coefficient of approximately 0.799.
+**Key EDA Observations:**
+
+- `Overall Qual` has the strongest positive correlation with `SalePrice` among the numerical features, with a correlation coefficient of approximately 0.799.
+- SalePrice distribution is right-skewed, indicating some high-priced properties.
+- The IQR method identified 137 potential SalePrice outliers, approximately 4.68% of the dataset.
+- Potential outliers will be retained for further evaluation rather than removed automatically.
+- Missing values may represent the absence of certain property features and require careful handling.
 
 ### Upcoming
 
-- Missing values visualization and detailed analysis.
-- Outlier analysis.
+- Numerical feature outlier analysis (`Gr Liv Area`, `Lot Area`, `Garage Area`, etc.).
 - Categorical feature analysis.
+- Neighborhood and SalePrice relationship analysis.
+- Further feature relationship and skewness analysis.
 - Data cleaning and preprocessing.
 - Feature engineering.
 - Train-test split (80% training, 20% testing).
