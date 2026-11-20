@@ -294,3 +294,154 @@ plt.xlabel("Above Ground Living Area (sq ft)")
 
 plt.tight_layout()
 plt.show()
+
+
+# Outlier Analysis - Gr Liv Area (IQR Method)
+
+Q1 = df["Gr Liv Area"].quantile(0.25)
+Q3 = df["Gr Liv Area"].quantile(0.75)
+
+IQR = Q3 - Q1
+
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+outliers = df[
+    (df["Gr Liv Area"] < lower_bound) |
+    (df["Gr Liv Area"] > upper_bound)
+]
+
+print("\nGr Liv Area Outlier Analysis")
+print("Q1:", Q1)
+print("Q3:", Q3)
+print("IQR:", IQR)
+print("Lower Bound:", lower_bound)
+print("Upper Bound:", upper_bound)
+print("Total Potential Outliers:", len(outliers))
+
+outlier_percentage = (len(outliers) / len(df)) * 100
+
+print("Outlier Percentage:", outlier_percentage, "%")
+
+
+# Outlier Analysis - Lot Area
+
+plt.figure(figsize=(10, 5))
+
+sns.boxplot(x=df["Lot Area"])
+
+plt.title("Outlier Analysis of Lot Area")
+plt.xlabel("Lot Area (sq ft)")
+
+plt.tight_layout()
+plt.show()
+
+
+
+# Outlier Analysis - Lot Area (IQR Method)
+
+Q1 = df["Lot Area"].quantile(0.25)
+Q3 = df["Lot Area"].quantile(0.75)
+
+IQR = Q3 - Q1
+
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+outliers = df[
+    (df["Lot Area"] < lower_bound) |
+    (df["Lot Area"] > upper_bound)
+]
+
+print("\nLot Area Outlier Analysis")
+print("Q1:", Q1)
+print("Q3:", Q3)
+print("IQR:", IQR)
+print("Lower Bound:", lower_bound)
+print("Upper Bound:", upper_bound)
+print("Total Potential Outliers:", len(outliers))
+
+outlier_percentage = (len(outliers) / len(df)) * 100
+print("Outlier Percentage:", outlier_percentage, "%")
+
+
+# Outlier Analysis - Garage Area
+
+plt.figure(figsize=(10, 5))
+
+sns.boxplot(x=df["Garage Area"])
+
+plt.title("Outlier Analysis of Garage Area")
+plt.xlabel("Garage Area (sq ft)")
+
+plt.tight_layout()
+plt.show()
+
+
+
+# Outlier Analysis - Garage Area (IQR Method)
+
+Q1 = df["Garage Area"].quantile(0.25)
+Q3 = df["Garage Area"].quantile(0.75)
+
+IQR = Q3 - Q1
+
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+outliers = df[
+    (df["Garage Area"] < lower_bound) |
+    (df["Garage Area"] > upper_bound)
+]
+
+print("\nGarage Area Outlier Analysis")
+print("Q1:", Q1)
+print("Q3:", Q3)
+print("IQR:", IQR)
+print("Lower Bound:", lower_bound)
+print("Upper Bound:", upper_bound)
+print("Total Potential Outliers:", len(outliers))
+
+outlier_percentage = (len(outliers) / len(df)) * 100
+
+print("Outlier Percentage:", outlier_percentage, "%")
+
+# House Style Category Analysis
+
+print("\nHouse Style Categories:")
+print(df["House Style"].value_counts())
+
+# House Style Count Plot
+
+plt.figure(figsize=(10, 6))
+
+sns.countplot(
+    data=df,
+    x="House Style",
+    order=df["House Style"].value_counts().index
+)
+
+plt.title("Distribution of House Styles")
+plt.xlabel("House Style")
+plt.ylabel("Number of Houses")
+
+plt.tight_layout()
+plt.show()
+
+# House Style vs SalePrice
+
+plt.figure(figsize=(10, 6))
+
+sns.barplot(
+    data=df,
+    x="House Style",
+    y="SalePrice",
+    errorbar=None
+)
+
+plt.title("Average SalePrice by House Style")
+plt.xlabel("House Style")
+plt.ylabel("Average SalePrice")
+
+plt.tight_layout()
+plt.show()
