@@ -71,21 +71,32 @@ House-Price-Prediction-Using-ML/
 8. Missing Values Visualization (Top 10 columns).
 9. SalePrice Outlier Analysis using a Boxplot.
 10. SalePrice Outlier Detection using the IQR Method.
+11. `Gr Liv Area` Outlier Analysis using a Boxplot and IQR Method.
+12. `Lot Area` Outlier Analysis using a Boxplot and IQR Method.
+13. `Garage Area` Outlier Analysis using a Boxplot and IQR Method.
+14. House Style Category Analysis.
+15. House Style Distribution Visualization using a Count Plot.
+16. House Style vs SalePrice Analysis using a Bar Plot.
 
-**Key EDA Observations:**
+### Key EDA Observations
 
 - `Overall Qual` has the strongest positive correlation with `SalePrice` among the numerical features, with a correlation coefficient of approximately 0.799.
 - SalePrice distribution is right-skewed, indicating some high-priced properties.
 - The IQR method identified 137 potential SalePrice outliers, approximately 4.68% of the dataset.
+- `Gr Liv Area` has 75 potential outliers (approximately 2.56%).
+- `Lot Area` has 127 potential outliers (approximately 4.33%).
+- `Garage Area` has 42 potential outliers (approximately 1.43%).
+- `1Story` is the most common house style, with 1,481 houses.
+- The dataset contains 8 different house styles.
 - Potential outliers will be retained for further evaluation rather than removed automatically.
 - Missing values may represent the absence of certain property features and require careful handling.
 
 ### Upcoming
 
-- Numerical feature outlier analysis (`Gr Liv Area`, `Lot Area`, `Garage Area`, etc.).
-- Categorical feature analysis.
-- Neighborhood and SalePrice relationship analysis.
-- Further feature relationship and skewness analysis.
+- Further categorical feature analysis.
+- Neighborhood distribution and SalePrice relationship analysis.
+- Additional feature relationship analysis.
+- Skewness analysis.
 - Data cleaning and preprocessing.
 - Feature engineering.
 - Train-test split (80% training, 20% testing).
