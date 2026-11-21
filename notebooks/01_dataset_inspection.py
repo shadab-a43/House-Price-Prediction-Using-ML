@@ -1,69 +1,73 @@
 
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Dataset ka path
+
+# ==========================================
+# 1. DATASET LOADING AND INSPECTION
+# ==========================================
+
+# Dataset path
 file_path = "data/AmesHousing.csv"
 
-# CSV file read karna
+# Read CSV file
 df = pd.read_csv(file_path)
 
-# Dataset ki first 5 rows dekhna
+# First 5 rows
+print("\nFirst 5 Rows:")
 print(df.head())
 
-# Total rows aur columns
+# Dataset shape
 print("\nDataset Shape:")
 print(df.shape)
 
-# Total rows
 print("\nTotal Rows:", df.shape[0])
-
-# Total columns
 print("Total Columns:", df.shape[1])
 
-# Saare column names
+# Column names
 print("\nColumn Names:")
 print(df.columns.tolist())
 
-
-# Dataset ki information
+# Dataset information
 print("\nDataset Information:")
 df.info()
 
-# Missing values count
+
+# ==========================================
+# 2. MISSING VALUES ANALYSIS
+# ==========================================
+
 print("\nMissing Values:")
 print(df.isnull().sum())
 
-# Total missing values
 print("\nTotal Missing Values:")
 print(df.isnull().sum().sum())
 
-
-# Missing values in each column
+# Missing values count
 missing_values = df.isnull().sum()
 
-# Only columns having missing values
-missing_values = missing_values[missing_values > 0]
-
-# Sort from highest to lowest
-missing_values = missing_values.sort_values(ascending=False)
+missing_values = missing_values[
+    missing_values > 0
+].sort_values(ascending=False)
 
 print("\nColumns with Missing Values:")
 print(missing_values)
 
+# Missing values report
+missing_percentage = (
+    df.isnull().sum() / len(df)
+) * 100
 
-# Missing values percentage
-missing_percentage = (df.isnull().sum() / len(df)) * 100
-
-# Combine count and percentage
 missing_report = pd.DataFrame({
     "Missing Count": df.isnull().sum(),
     "Missing Percentage": missing_percentage
 })
 
-# Only columns with missing values
-missing_report = missing_report[missing_report["Missing Count"] > 0]
+missing_report = missing_report[
+    missing_report["Missing Count"] > 0
+]
 
-# Sort by missing percentage
 missing_report = missing_report.sort_values(
     by="Missing Percentage",
     ascending=False
@@ -73,12 +77,19 @@ print("\nMissing Values Report:")
 print(missing_report.round(2).to_string())
 
 
-# Check duplicate rows
+# ==========================================
+# 3. DUPLICATE ROW ANALYSIS
+# ==========================================
+
 duplicate_count = df.duplicated().sum()
 
 print("\nDuplicate Rows:", duplicate_count)
 
-# SalePrice Statistical Summary
+
+# ==========================================
+# 4. SALEPRICE STATISTICAL ANALYSIS
+# ==========================================
+
 print("\nSalePrice Statistics:")
 print(df["SalePrice"].describe())
 
@@ -88,13 +99,17 @@ print("Average SalePrice:", df["SalePrice"].mean())
 print("Median SalePrice:", df["SalePrice"].median())
 
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+# ==========================================
+# 5. SALEPRICE DISTRIBUTION
+# ==========================================
 
-# SalePrice Distribution
 plt.figure(figsize=(10, 5))
 
-sns.histplot(df["SalePrice"], bins=40, kde=True)
+sns.histplot(
+    df["SalePrice"],
+    bins=40,
+    kde=True
+)
 
 plt.title("Distribution of House Sale Prices")
 plt.xlabel("Sale Price ($)")
@@ -104,25 +119,11 @@ plt.tight_layout()
 plt.show()
 
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+# ==========================================
+# 6. FEATURE VS SALEPRICE ANALYSIS
+# ==========================================
 
-# Visualize SalePrice Distribution
-plt.figure(figsize=(10, 5))
-
-sns.histplot(df["SalePrice"], bins=40, kde=True)
-
-plt.title("Distribution of House Sale Prices")
-plt.xlabel("Sale Price ($)")
-plt.ylabel("Number of Houses")
-
-plt.tight_layout()
-plt.show()
-
-
-
-# Relationship between Living Area and Sale Price
-
+# Living Area vs SalePrice
 plt.figure(figsize=(8, 5))
 
 sns.scatterplot(
@@ -139,7 +140,7 @@ plt.tight_layout()
 plt.show()
 
 
-# Relationship between Overall Quality and Sale Price
+# Overall Quality vs SalePrice
 plt.figure(figsize=(8, 5))
 
 sns.scatterplot(
@@ -157,7 +158,8 @@ plt.ylabel("Sale Price ($)")
 plt.tight_layout()
 plt.show()
 
-# Relationship between Garage Area and Sale Price
+
+# Garage Area vs SalePrice
 plt.figure(figsize=(8, 5))
 
 sns.scatterplot(
@@ -175,7 +177,8 @@ plt.ylabel("Sale Price ($)")
 plt.tight_layout()
 plt.show()
 
-# Relationship between Year Built and Sale Price
+
+# Year Built vs SalePrice
 plt.figure(figsize=(8, 5))
 
 sns.scatterplot(
@@ -193,7 +196,11 @@ plt.ylabel("Sale Price ($)")
 plt.tight_layout()
 plt.show()
 
-# Correlation Analysis
+
+# ==========================================
+# 7. CORRELATION ANALYSIS
+# ==========================================
+
 numeric_df = df.select_dtypes(include=["number"])
 
 correlation = numeric_df.corr()
@@ -208,20 +215,32 @@ sns.heatmap(
 )
 
 plt.title("Feature Correlation Heatmap")
+
 plt.tight_layout()
 plt.show()
 
-# Top 10 Features Correlated with SalePrice
+
+# Top 10 features correlated with SalePrice
 saleprice_corr = correlation["SalePrice"].sort_values(
     ascending=False
 )
 
 print("\nTop 10 Features Correlated with SalePrice:")
-print(saleprice_corr.drop("SalePrice").head(10))
 
-# Missing Values Visualization
+print(
+    saleprice_corr
+    .drop("SalePrice")
+    .head(10)
+)
 
-missing_percent = (df.isnull().mean() * 100)
+
+# ==========================================
+# 8. MISSING VALUES VISUALIZATION
+# ==========================================
+
+missing_percent = (
+    df.isnull().mean() * 100
+)
 
 missing_percent = missing_percent[
     missing_percent > 0
@@ -241,7 +260,10 @@ plt.ylabel("Features")
 plt.tight_layout()
 plt.show()
 
-# Outlier Analysis - SalePrice
+
+# ==========================================
+# 9. SALEPRICE OUTLIER ANALYSIS
+# ==========================================
 
 plt.figure(figsize=(10, 5))
 
@@ -254,8 +276,7 @@ plt.tight_layout()
 plt.show()
 
 
-# Outlier Analysis - IQR Method
-
+# SalePrice IQR Method
 Q1 = df["SalePrice"].quantile(0.25)
 Q3 = df["SalePrice"].quantile(0.75)
 
@@ -277,13 +298,16 @@ print("Lower Bound:", lower_bound)
 print("Upper Bound:", upper_bound)
 print("Total Potential Outliers:", len(outliers))
 
-
-outlier_percentage = (len(outliers) / len(df)) * 100
+outlier_percentage = (
+    len(outliers) / len(df)
+) * 100
 
 print("Outlier Percentage:", outlier_percentage, "%")
 
 
-# Outlier Analysis - Gr Liv Area
+# ==========================================
+# 10. GR LIV AREA OUTLIER ANALYSIS
+# ==========================================
 
 plt.figure(figsize=(10, 5))
 
@@ -295,8 +319,6 @@ plt.xlabel("Above Ground Living Area (sq ft)")
 plt.tight_layout()
 plt.show()
 
-
-# Outlier Analysis - Gr Liv Area (IQR Method)
 
 Q1 = df["Gr Liv Area"].quantile(0.25)
 Q3 = df["Gr Liv Area"].quantile(0.75)
@@ -319,12 +341,16 @@ print("Lower Bound:", lower_bound)
 print("Upper Bound:", upper_bound)
 print("Total Potential Outliers:", len(outliers))
 
-outlier_percentage = (len(outliers) / len(df)) * 100
+outlier_percentage = (
+    len(outliers) / len(df)
+) * 100
 
 print("Outlier Percentage:", outlier_percentage, "%")
 
 
-# Outlier Analysis - Lot Area
+# ==========================================
+# 11. LOT AREA OUTLIER ANALYSIS
+# ==========================================
 
 plt.figure(figsize=(10, 5))
 
@@ -336,9 +362,6 @@ plt.xlabel("Lot Area (sq ft)")
 plt.tight_layout()
 plt.show()
 
-
-
-# Outlier Analysis - Lot Area (IQR Method)
 
 Q1 = df["Lot Area"].quantile(0.25)
 Q3 = df["Lot Area"].quantile(0.75)
@@ -361,11 +384,16 @@ print("Lower Bound:", lower_bound)
 print("Upper Bound:", upper_bound)
 print("Total Potential Outliers:", len(outliers))
 
-outlier_percentage = (len(outliers) / len(df)) * 100
+outlier_percentage = (
+    len(outliers) / len(df)
+) * 100
+
 print("Outlier Percentage:", outlier_percentage, "%")
 
 
-# Outlier Analysis - Garage Area
+# ==========================================
+# 12. GARAGE AREA OUTLIER ANALYSIS
+# ==========================================
 
 plt.figure(figsize=(10, 5))
 
@@ -377,9 +405,6 @@ plt.xlabel("Garage Area (sq ft)")
 plt.tight_layout()
 plt.show()
 
-
-
-# Outlier Analysis - Garage Area (IQR Method)
 
 Q1 = df["Garage Area"].quantile(0.25)
 Q3 = df["Garage Area"].quantile(0.75)
@@ -402,17 +427,22 @@ print("Lower Bound:", lower_bound)
 print("Upper Bound:", upper_bound)
 print("Total Potential Outliers:", len(outliers))
 
-outlier_percentage = (len(outliers) / len(df)) * 100
+outlier_percentage = (
+    len(outliers) / len(df)
+) * 100
 
 print("Outlier Percentage:", outlier_percentage, "%")
 
-# House Style Category Analysis
+
+# ==========================================
+# 13. HOUSE STYLE ANALYSIS
+# ==========================================
 
 print("\nHouse Style Categories:")
 print(df["House Style"].value_counts())
 
-# House Style Count Plot
 
+# House Style Count Plot
 plt.figure(figsize=(10, 6))
 
 sns.countplot(
@@ -428,14 +458,23 @@ plt.ylabel("Number of Houses")
 plt.tight_layout()
 plt.show()
 
+
 # House Style vs SalePrice
+house_style_prices = (
+    df.groupby("House Style")["SalePrice"]
+    .mean()
+    .sort_values(ascending=False)
+)
+
+print("\nAverage SalePrice by House Style:")
+print(house_style_prices.round(2))
+
 
 plt.figure(figsize=(10, 6))
 
 sns.barplot(
-    data=df,
-    x="House Style",
-    y="SalePrice",
+    x=house_style_prices.index,
+    y=house_style_prices.values,
     errorbar=None
 )
 
@@ -445,3 +484,239 @@ plt.ylabel("Average SalePrice")
 
 plt.tight_layout()
 plt.show()
+
+
+# ==========================================
+# 14. NEIGHBORHOOD ANALYSIS
+# ==========================================
+
+print("\nTotal Neighborhoods:")
+print(df["Neighborhood"].nunique())
+
+
+# Houses in each neighborhood
+neighborhood_counts = (
+    df["Neighborhood"].value_counts()
+)
+
+print("\nHouses in Each Neighborhood:")
+print(neighborhood_counts)
+
+
+# Neighborhood Count Plot
+plt.figure(figsize=(12, 6))
+
+sns.countplot(
+    data=df,
+    x="Neighborhood",
+    order=neighborhood_counts.index
+)
+
+plt.title("House Distribution by Neighborhood")
+plt.xlabel("Neighborhood")
+plt.ylabel("Number of Houses")
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+plt.show()
+
+
+# Average SalePrice by Neighborhood
+neighborhood_prices = (
+    df.groupby("Neighborhood")["SalePrice"]
+    .mean()
+    .sort_values(ascending=False)
+)
+
+print("\nAverage SalePrice by Neighborhood:")
+print(neighborhood_prices.round(2))
+
+
+# Neighborhood vs SalePrice
+plt.figure(figsize=(14, 6))
+
+sns.barplot(
+    x=neighborhood_prices.index,
+    y=neighborhood_prices.values,
+    errorbar=None
+)
+
+plt.title("Average SalePrice by Neighborhood")
+plt.xlabel("Neighborhood")
+plt.ylabel("Average SalePrice")
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+plt.show()
+
+
+# ==========================================
+# 15. FURTHER CATEGORICAL FEATURE ANALYSIS
+# ==========================================
+
+categorical_features = [
+    "Bldg Type",
+    "Exterior 1st",
+    "Kitchen Qual",
+    "MS Zoning"
+]
+
+for feature in categorical_features:
+
+    print(f"\nCategory Distribution: {feature}")
+
+    print(df[feature].value_counts())
+
+    # Category Count Plot
+    plt.figure(figsize=(10, 5))
+
+    sns.countplot(
+        data=df,
+        x=feature,
+        order=df[feature].value_counts().index
+    )
+
+    plt.title(f"Distribution of {feature}")
+    plt.xlabel(feature)
+    plt.ylabel("Number of Houses")
+    plt.xticks(rotation=45)
+
+    plt.tight_layout()
+    plt.show()
+
+    # Average SalePrice by Category
+    category_prices = (
+        df.groupby(feature)["SalePrice"]
+        .mean()
+        .sort_values(ascending=False)
+    )
+
+    print(f"\nAverage SalePrice by {feature}:")
+    print(category_prices.round(2))
+
+    plt.figure(figsize=(10, 5))
+
+    sns.barplot(
+        x=category_prices.index,
+        y=category_prices.values,
+        errorbar=None
+    )
+
+    plt.title(f"Average SalePrice by {feature}")
+    plt.xlabel(feature)
+    plt.ylabel("Average SalePrice")
+    plt.xticks(rotation=45)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# ==========================================
+# 16. FEATURE RELATIONSHIP ANALYSIS
+# ==========================================
+
+relationship_features = [
+    "Overall Qual",
+    "Gr Liv Area",
+    "Total Bsmt SF",
+    "Garage Cars",
+    "Year Built"
+]
+
+for feature in relationship_features:
+
+    plt.figure(figsize=(8, 5))
+
+    sns.scatterplot(
+        data=df,
+        x=feature,
+        y="SalePrice",
+        alpha=0.5
+    )
+
+    plt.title(f"{feature} vs SalePrice")
+    plt.xlabel(feature)
+    plt.ylabel("SalePrice")
+
+    plt.tight_layout()
+    plt.show()
+
+
+# Correlation of selected features with SalePrice
+print("\nFeature Correlation with SalePrice:")
+
+feature_correlation = (
+    df[relationship_features + ["SalePrice"]]
+    .corr(numeric_only=True)["SalePrice"]
+    .drop("SalePrice")
+    .sort_values(ascending=False)
+)
+
+print(feature_correlation.round(3))
+
+
+# ==========================================
+# 17. SKEWNESS ANALYSIS
+# ==========================================
+
+# Select numerical columns
+numeric_df = df.select_dtypes(include=["number"])
+
+# Remove identifier columns and target
+numeric_features = numeric_df.drop(
+    columns=["Order", "PID", "SalePrice"],
+    errors="ignore"
+)
+
+# Calculate skewness
+skewness = numeric_features.skew()
+
+# Sort by absolute skewness
+skewness = skewness.reindex(
+    skewness.abs().sort_values(ascending=False).index
+)
+
+print("\nNumerical Feature Skewness:")
+print(skewness.round(3))
+
+
+# Identify highly skewed features
+highly_skewed = skewness[
+    skewness.abs() > 1
+]
+
+print("\nHighly Skewed Features (Absolute Skewness > 1):")
+print(highly_skewed.round(3))
+
+
+# Visualize top 6 highly skewed features
+top_skewed_features = highly_skewed.head(6).index
+
+for feature in top_skewed_features:
+
+    plt.figure(figsize=(8, 5))
+
+    sns.histplot(
+        data=df,
+        x=feature,
+        kde=True
+    )
+
+    plt.title(f"Distribution of {feature}")
+    plt.xlabel(feature)
+    plt.ylabel("Frequency")
+
+    plt.tight_layout()
+    plt.show()
+
+
+# SalePrice Skewness separately
+saleprice_skewness = df["SalePrice"].skew()
+
+print("\nSalePrice Skewness:")
+print(round(saleprice_skewness, 3))
+
+
+print("\n==========================================")
+print("EDA ANALYSIS SCRIPT COMPLETED")
+print("==========================================")
