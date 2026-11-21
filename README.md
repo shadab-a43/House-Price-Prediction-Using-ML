@@ -1,3 +1,5 @@
+
+
 # House Price Prediction Using Machine Learning
 
 An end-to-end Machine Learning project focused on predicting residential house prices using Python and Scikit-learn.
@@ -39,6 +41,8 @@ House-Price-Prediction-Using-ML/
 │   └── 01_dataset_inspection.py
 │
 ├── src/
+│   └── data_preprocessing.py
+│
 ├── models/
 ├── app/
 │
@@ -54,10 +58,16 @@ House-Price-Prediction-Using-ML/
 - Ames Housing dataset added.
 - Dataset loaded and inspected using Pandas.
 - Dataset dimensions and column information analyzed.
-- Missing values identified and examined.
+- Missing values identified and investigated.
 - Duplicate row check completed (0 duplicate rows).
 - Statistical summary of `SalePrice` generated.
 - Initial Exploratory Data Analysis (EDA) completed.
+- Data preprocessing phase started.
+- Identifier columns (`Order` and `PID`) identified for exclusion from model features.
+- Target variable `SalePrice` verified (no missing values).
+- Train-test split implemented (80% training, 20% testing).
+- Numerical and categorical features separated.
+- Missing values in training features analyzed.
 
 ### EDA Analysis Completed
 
@@ -77,10 +87,14 @@ House-Price-Prediction-Using-ML/
 14. House Style Category Analysis.
 15. House Style Distribution Visualization using a Count Plot.
 16. House Style vs SalePrice Analysis using a Bar Plot.
+17. Neighborhood Distribution and SalePrice Analysis.
+18. Categorical Feature Analysis (`Bldg Type`, `Exterior 1st`, `Kitchen Qual`, and `MS Zoning`).
+19. Feature Relationship Analysis using scatter plots.
+20. Numerical Feature Skewness Analysis.
 
 ### Key EDA Observations
 
-- `Overall Qual` has the strongest positive correlation with `SalePrice` among the numerical features, with a correlation coefficient of approximately 0.799.
+- `Overall Qual` has the strongest positive correlation with `SalePrice` among numerical features, with a correlation coefficient of approximately 0.799.
 - SalePrice distribution is right-skewed, indicating some high-priced properties.
 - The IQR method identified 137 potential SalePrice outliers, approximately 4.68% of the dataset.
 - `Gr Liv Area` has 75 potential outliers (approximately 2.56%).
@@ -88,18 +102,34 @@ House-Price-Prediction-Using-ML/
 - `Garage Area` has 42 potential outliers (approximately 1.43%).
 - `1Story` is the most common house style, with 1,481 houses.
 - The dataset contains 8 different house styles.
+- NoRidge has the highest average SalePrice among neighborhoods, while MeadowV has the lowest.
+- `SalePrice` has a skewness value of approximately 1.744.
 - Potential outliers will be retained for further evaluation rather than removed automatically.
 - Missing values may represent the absence of certain property features and require careful handling.
 
+### Data Preprocessing — In Progress
+
+- Dataset missing values investigated.
+- Garage-related missing values examined.
+- Basement-related missing values examined.
+- Masonry veneer missing values examined.
+- Property feature missing values investigated.
+- `Lot Frontage` missing values analyzed by neighborhood.
+- Identifier columns identified for exclusion.
+- Target variable verified.
+- Train-test split completed.
+- Numerical and categorical features identified (36 numerical and 43 categorical).
+- Missing values in training features analyzed (11 numerical columns and 15 categorical columns contain missing values).
+
 ### Upcoming
 
-- Further categorical feature analysis.
-- Neighborhood distribution and SalePrice relationship analysis.
-- Additional feature relationship analysis.
-- Skewness analysis.
-- Data cleaning and preprocessing.
+- Complete missing-value investigation.
+- Implement appropriate numerical and categorical imputation strategies.
+- Handle special cases such as missing garage, basement, and masonry veneer information.
+- Build a preprocessing pipeline.
+- Categorical feature encoding.
+- Numerical feature scaling where appropriate.
 - Feature engineering.
-- Train-test split (80% training, 20% testing).
 - Linear Regression model implementation.
 - Random Forest Regressor implementation.
 - Model evaluation using MAE, RMSE, and R².
@@ -113,3 +143,4 @@ To build a practical understanding of Machine Learning concepts by developing a 
 ---
 
 **Note:** This project uses US housing data from Ames, Iowa. It is an educational Machine Learning project and is not designed to estimate current Indian property prices.
+
