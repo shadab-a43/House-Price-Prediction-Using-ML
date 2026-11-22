@@ -434,3 +434,109 @@ print(categorical_missing.sort_values(ascending=False))
 print("\nTotal Categorical Columns with Missing Values:",
       len(categorical_missing))
 
+
+# Step 18.3: Fireplace Missing Value Investigation
+
+fireplace_missing = X_train["Fireplace Qu"].isnull()
+
+print("\n--- Fireplace Investigation ---")
+
+print("Missing Fireplace Quality:",
+      fireplace_missing.sum())
+
+print("\nFireplaces Count for Missing Quality:")
+print(
+    X_train.loc[fireplace_missing, "Fireplaces"]
+    .value_counts(dropna=False)
+    .sort_index()
+)
+
+print("\nRecords with Missing Quality but Existing Fireplace:")
+print(
+    X_train.loc[
+        fireplace_missing & (X_train["Fireplaces"] > 0),
+        ["Fireplaces", "Fireplace Qu"]
+    ]
+)
+
+
+# Step 18.4: Masonry Veneer Investigation
+
+masonry_type_missing = X_train["Mas Vnr Type"].isnull()
+
+print("\n--- Masonry Veneer Investigation ---")
+
+print("Missing Mas Vnr Type:",
+      masonry_type_missing.sum())
+
+print("\nMas Vnr Area values for missing types:")
+print(
+    X_train.loc[masonry_type_missing, "Mas Vnr Area"]
+    .value_counts(dropna=False)
+    .sort_index()
+)
+
+print("\nRecords with Missing Type and Missing Area:")
+print(
+    X_train.loc[
+        masonry_type_missing & X_train["Mas Vnr Area"].isnull(),
+        ["Mas Vnr Type", "Mas Vnr Area", "Exterior 1st", "Exterior 2nd"]
+    ].head(30)
+)
+
+print("\nRecords with Missing Type but Positive Area:")
+print(
+    X_train.loc[
+        masonry_type_missing & (X_train["Mas Vnr Area"] > 0),
+        ["Mas Vnr Type", "Mas Vnr Area", "Exterior 1st", "Exterior 2nd"]
+    ]
+)
+
+
+# Step 18.5: Masonry Area Median Investigation
+
+print("\n--- Masonry Area Median Analysis ---")
+
+print("Missing Area:", X_train["Mas Vnr Area"].isnull().sum())
+
+print("Overall Median:",
+      X_train["Mas Vnr Area"].median())
+
+print("Positive Area Median:",
+      X_train.loc[
+          X_train["Mas Vnr Area"] > 0,
+          "Mas Vnr Area"
+      ].median())
+
+print("\nArea Statistics:")
+print(X_train["Mas Vnr Area"].describe())
+
+
+# Step 18.6: Missing Masonry Area Investigation
+
+area_missing = X_train["Mas Vnr Area"].isnull()
+
+print("\n--- Missing Masonry Area Records ---")
+
+print("Total Missing Area:", area_missing.sum())
+
+print("\nMasonry Type for Missing Area:")
+print(
+    X_train.loc[area_missing, "Mas Vnr Type"]
+    .value_counts(dropna=False)
+)
+
+print("\nOther Property Details:")
+print(
+    X_train.loc[
+        area_missing,
+        [
+            "Mas Vnr Type",
+            "Mas Vnr Area",
+            "Exterior 1st",
+            "Exterior 2nd",
+            "Overall Qual",
+            "Year Built"
+        ]
+    ]
+)
