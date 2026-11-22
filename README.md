@@ -109,27 +109,37 @@ House-Price-Prediction-Using-ML/
 
 ### Data Preprocessing — In Progress
 
-- Dataset missing values investigated.
-- Garage-related missing values examined.
-- Basement-related missing values examined.
-- Masonry veneer missing values examined.
-- Property feature missing values investigated.
-- `Lot Frontage` missing values analyzed by neighborhood.
-- Identifier columns identified for exclusion.
-- Target variable verified.
-- Train-test split completed.
-- Numerical and categorical features identified (36 numerical and 43 categorical).
-- Missing values in training features analyzed (11 numerical columns and 15 categorical columns contain missing values).
+**Dataset Preparation**
 
-### Upcoming
+- Original dataset loaded without modifying the source CSV.
+- Identifier columns (`Order` and `PID`) excluded from model features.
+- Target variable separated from input features.
+- Train-test split completed (80% training, 20% testing).
+- Training data contains 2,344 records; testing data contains 586 records.
+- Numerical and categorical features separated (36 numerical and 43 categorical).
+- Missing values analyzed in training features (11 numerical columns and 15 categorical columns).
 
-- Complete missing-value investigation.
-- Implement appropriate numerical and categorical imputation strategies.
-- Handle special cases such as missing garage, basement, and masonry veneer information.
-- Build a preprocessing pipeline.
+**Missing Value Investigation Completed**
+
+- Garage-related missing values investigated, including properties without garages and exceptional records.
+- Basement-related missing values investigated, including properties without basements and exceptional records.
+- Fireplace quality missing values investigated and confirmed to correspond to properties without fireplaces.
+- Masonry veneer missing values investigated, including missing types, zero areas, positive areas, and records where both values are missing.
+
+**Upcoming Preprocessing Tasks**
+
+- Investigate `Lot Frontage` missing values using training data.
+- Investigate remaining numerical and categorical missing values.
+- Finalize missing-value imputation strategies.
+- Implement numerical and categorical imputation.
+- Build a leakage-safe preprocessing pipeline.
 - Categorical feature encoding.
 - Numerical feature scaling where appropriate.
 - Feature engineering.
+
+### Upcoming
+
+- Complete data cleaning and preprocessing.
 - Linear Regression model implementation.
 - Random Forest Regressor implementation.
 - Model evaluation using MAE, RMSE, and R².
