@@ -1,26 +1,34 @@
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
-# Load dataset
+
+# ============================================================
+# STEP 1: LOAD DATASET
+# ============================================================
+
 df = pd.read_csv("data/AmesHousing.csv")
 
-# Dataset information
+print("\n========== DATASET INFORMATION ==========")
+
 print("Dataset Shape:", df.shape)
+print("Total Rows:", df.shape[0])
+print("Total Columns:", df.shape[1])
 
-# Missing values analysis
+
+# ============================================================
+# STEP 2: COMPLETE MISSING VALUES ANALYSIS
+# ============================================================
+
+print("\n========== MISSING VALUES ANALYSIS ==========")
+
 missing_values = df.isnull().sum()
-
 missing_values = missing_values[missing_values > 0]
 
 print("\nMissing Values:")
 print(missing_values.sort_values(ascending=False))
 
 print("\nTotal Missing Values:", missing_values.sum())
-
-
-
-# Classify columns with missing values
-print("\nMissing Values Data Types:")
 
 missing_info = pd.DataFrame({
     "Data Type": df[missing_values.index].dtypes,
@@ -30,22 +38,38 @@ missing_info = pd.DataFrame({
     ).round(2)
 })
 
+print("\nMissing Values Data Types:")
 print(missing_info)
 
 
-# Inspect special missing value cases
+# ============================================================
+# STEP 3: ELECTRICAL INVESTIGATION
+# ============================================================
 
-print("\n--- Electrical Missing Record ---")
+print("\n========== ELECTRICAL INVESTIGATION ==========")
+
+print("\nElectrical Value Counts:")
+print(df["Electrical"].value_counts())
+
+print("\nMissing Electrical Record:")
 
 print(
     df[df["Electrical"].isnull()][
-        ["Electrical", "Overall Qual", "Year Built", "SalePrice"]
+        ["Electrical", "Neighborhood", "Year Built",
+         "Overall Qual", "SalePrice"]
     ]
 )
 
-print("\n--- Garage Year Missing Records ---")
+
+# ============================================================
+# STEP 4: GARAGE INVESTIGATION
+# ============================================================
+
+print("\n========== GARAGE INVESTIGATION ==========")
 
 garage_missing = df[df["Garage Yr Blt"].isnull()]
+
+print("\nGarage Year Missing Records:")
 
 print(
     garage_missing[
@@ -54,12 +78,7 @@ print(
     ].head(10)
 )
 
-print("\nTotal records with missing Garage Year:",
-      len(garage_missing))
-
-
-
-# Verify missing garage records
+print("\nTotal Missing Garage Year:", len(garage_missing))
 
 print("\n--- Garage Missing Value Verification ---")
 
@@ -81,33 +100,35 @@ print("Garage Qual Missing:",
 print("Garage Cond Missing:",
       garage_missing["Garage Cond"].isnull().sum())
 
+print("\n--- Garage Exceptional Records ---")
 
-
-# Inspect remaining 2 garage records
-
-print("\n--- Remaining Garage Records ---")
+garage_exceptions = garage_missing[
+    garage_missing["Garage Type"].notnull()
+    | garage_missing["Garage Cars"].ne(0)
+    | garage_missing["Garage Area"].ne(0)
+]
 
 print(
-    garage_missing[
-        (garage_missing["Garage Type"].notnull()) |
-        (garage_missing["Garage Cars"] != 0) |
-        (garage_missing["Garage Area"] != 0)
-    ][
+    garage_exceptions[
         ["Garage Type", "Garage Yr Blt", "Garage Cars",
          "Garage Area", "Garage Finish", "Garage Qual",
          "Garage Cond", "SalePrice"]
-    ]
+    ].to_string()
 )
 
 
-# Inspect missing basement records
+# ============================================================
+# STEP 5: BASEMENT INVESTIGATION
+# ============================================================
 
-print("\n--- Basement Missing Records ---")
+print("\n========== BASEMENT INVESTIGATION ==========")
 
 basement_missing = df[df["Bsmt Qual"].isnull()]
 
-print("Total Missing Basement Quality:",
+print("\nTotal Missing Basement Quality:",
       len(basement_missing))
+
+print("\nBasement Missing Records:")
 
 print(
     basement_missing[
@@ -117,12 +138,7 @@ print(
     ].head(10)
 )
 
-
-# Verify missing basement records
-
 print("\n--- Basement Verification ---")
-
-print("Total records:", len(basement_missing))
 
 print("Bsmt Cond Missing:",
       basement_missing["Bsmt Cond"].isnull().sum())
@@ -142,19 +158,15 @@ print("Bsmt Full Bath = 0:",
 print("Bsmt Half Bath = 0:",
       (basement_missing["Bsmt Half Bath"] == 0).sum())
 
-
-
-# Inspect basement exceptions
-
 print("\n--- Basement Exceptional Records ---")
 
 basement_exceptions = basement_missing[
-    (basement_missing["Total Bsmt SF"] != 0) |
-    (basement_missing["Bsmt Full Bath"] != 0) |
-    (basement_missing["Bsmt Half Bath"] != 0)
+    basement_missing["Total Bsmt SF"].ne(0)
+    | basement_missing["Bsmt Full Bath"].ne(0)
+    | basement_missing["Bsmt Half Bath"].ne(0)
 ]
 
-print("Exceptional records:", len(basement_exceptions))
+print("Exceptional Records:", len(basement_exceptions))
 
 print(
     basement_exceptions[
@@ -166,68 +178,17 @@ print(
     ].to_string()
 )
 
-
-# Inspect masonry veneer missing values
-
-print("\n--- Masonry Veneer Missing Records ---")
-
-masonry_missing = df[df["Mas Vnr Type"].isnull()]
-
-print("Total records:", len(masonry_missing))
-
-print(
-    masonry_missing[
-        ["Mas Vnr Type", "Mas Vnr Area", "Overall Qual", "SalePrice"]
-    ].head(10)
-)
-
-print("\nMas Vnr Area = 0:",
-      (masonry_missing["Mas Vnr Area"] == 0).sum())
-
-print("\n--- Basement Type 2 Missing Records ---")
-
-print(
-    df[df["BsmtFin Type 2"].isnull()][
-        ["Bsmt Qual", "BsmtFin Type 1",
-         "BsmtFin Type 2", "Total Bsmt SF"]
-    ].head(10)
-)
-
-
-
-
-# Inspect remaining masonry veneer records
-
-print("\n--- Masonry Veneer Exceptions ---")
-
-masonry_exceptions = masonry_missing[
-    (masonry_missing["Mas Vnr Area"] != 0) |
-    (masonry_missing["Mas Vnr Area"].isnull())
-]
-
-print("Exceptional records:", len(masonry_exceptions))
-
-print(
-    masonry_exceptions[
-        ["Mas Vnr Type", "Mas Vnr Area",
-         "Overall Qual", "Year Built", "SalePrice"]
-    ].to_string()
-)
-
-
-# Inspect basement Type 2 exceptions
-
-print("\n--- Basement Type 2 Exceptions ---")
+print("\n--- Basement Type 2 Investigation ---")
 
 type2_missing = df[df["BsmtFin Type 2"].isnull()]
 
 type2_exceptions = type2_missing[
-    (type2_missing["Bsmt Qual"].notnull()) |
-    (type2_missing["Total Bsmt SF"] > 0)
+    type2_missing["Bsmt Qual"].notnull()
+    | type2_missing["Total Bsmt SF"].gt(0)
 ]
 
-print("Total Type 2 missing:", len(type2_missing))
-print("Exceptional records:", len(type2_exceptions))
+print("Total Type 2 Missing:", len(type2_missing))
+print("Exceptional Records:", len(type2_exceptions))
 
 print(
     type2_exceptions[
@@ -236,23 +197,7 @@ print(
     ].to_string()
 )
 
-
-
-# Inspect masonry veneer exceptions in detail
-
-print("\n--- Masonry Veneer Detailed Inspection ---")
-
-print(
-    masonry_exceptions[
-        ["Mas Vnr Type", "Mas Vnr Area",
-         "Exterior 1st", "Exterior 2nd"]
-    ].to_string()
-)
-
-
-# Inspect Basement Type 2 exception
-
-print("\n--- Basement Type 2 Detailed Inspection ---")
+print("\n--- Basement Type 2 Index 444 ---")
 
 print(
     df.loc[444, [
@@ -263,13 +208,77 @@ print(
         "BsmtFin SF 2",
         "Bsmt Unf SF",
         "Total Bsmt SF"
-    ]]
+    ]].to_string()
 )
 
 
-# Inspect missing values in property features
+# ============================================================
+# STEP 6: MASONRY VENEER INVESTIGATION
+# ============================================================
 
-print("\n--- Property Feature Missing Values ---")
+print("\n========== MASONRY VENEER INVESTIGATION ==========")
+
+masonry_missing = df[df["Mas Vnr Type"].isnull()]
+
+print("Missing Masonry Type:", len(masonry_missing))
+
+print("\nMissing Masonry Records:")
+
+print(
+    masonry_missing[
+        ["Mas Vnr Type", "Mas Vnr Area",
+         "Overall Qual", "SalePrice"]
+    ].head(10)
+)
+
+print("\nMas Vnr Area = 0:",
+      (masonry_missing["Mas Vnr Area"] == 0).sum())
+
+masonry_exceptions = masonry_missing[
+    masonry_missing["Mas Vnr Area"].ne(0)
+    | masonry_missing["Mas Vnr Area"].isnull()
+]
+
+print("\n--- Masonry Exceptional Records ---")
+
+print("Exceptional Records:", len(masonry_exceptions))
+
+print(
+    masonry_exceptions[
+        ["Mas Vnr Type", "Mas Vnr Area",
+         "Overall Qual", "Year Built", "SalePrice"]
+    ].to_string()
+)
+
+print("\n--- Masonry Detailed Inspection ---")
+
+print(
+    masonry_exceptions[
+        ["Mas Vnr Type", "Mas Vnr Area",
+         "Exterior 1st", "Exterior 2nd"]
+    ].to_string()
+)
+
+print("\n--- Masonry Area Median Analysis ---")
+
+print("Missing Area:", df["Mas Vnr Area"].isnull().sum())
+
+print("Overall Median:", df["Mas Vnr Area"].median())
+
+print(
+    "Positive Area Median:",
+    df.loc[df["Mas Vnr Area"] > 0, "Mas Vnr Area"].median()
+)
+
+print("\nMasonry Area Statistics:")
+print(df["Mas Vnr Area"].describe())
+
+
+# ============================================================
+# STEP 7: PROPERTY FEATURE INVESTIGATION
+# ============================================================
+
+print("\n========== PROPERTY FEATURE INVESTIGATION ==========")
 
 property_columns = [
     "Pool QC",
@@ -280,74 +289,73 @@ property_columns = [
 ]
 
 for column in property_columns:
-    print(f"\n{column}:")
+
+    print(f"\n--- {column} ---")
+
     print("Missing:", df[column].isnull().sum())
-    print("Existing values:")
+
+    print("Existing Values:")
     print(df[column].value_counts().head(10))
 
 
-# Inspect Lot Frontage missing records
+# ============================================================
+# STEP 8: LOT FRONTAGE INVESTIGATION
+# ============================================================
 
-print("\n--- Lot Frontage Inspection ---")
+print("\n========== LOT FRONTAGE INVESTIGATION ==========")
 
-print("Missing:", df["Lot Frontage"].isnull().sum())
+print("Missing Lot Frontage:",
+      df["Lot Frontage"].isnull().sum())
+
+print("\nMissing Lot Frontage Records:")
 
 print(
     df[df["Lot Frontage"].isnull()][
-        ["Neighborhood", "Lot Area", "Lot Frontage", "SalePrice"]
+        ["Neighborhood", "Lot Area",
+         "Lot Frontage", "SalePrice"]
     ].head(10)
 )
 
+lot_frontage_analysis = df.groupby(
+    "Neighborhood"
+)["Lot Frontage"].agg(["count", "median"])
 
-# Inspect Electrical categories
+print("\nLot Frontage by Neighborhood:")
 
-print("\n--- Electrical Inspection ---")
+print(lot_frontage_analysis.sort_values("count"))
 
-print("Electrical value counts:")
-print(df["Electrical"].value_counts())
-
-print("\nMissing Electrical record:")
+print("\nNeighborhoods with No Lot Frontage Data:")
 
 print(
-    df[df["Electrical"].isnull()][
-        ["Electrical", "Neighborhood", "Year Built",
-         "Overall Qual", "SalePrice"]
+    lot_frontage_analysis[
+        lot_frontage_analysis["count"] == 0
     ]
 )
 
 
-# Check Lot Frontage availability by Neighborhood
+# ============================================================
+# STEP 9: IDENTIFIER COLUMNS INVESTIGATION
+# ============================================================
 
-print("\n--- Lot Frontage by Neighborhood ---")
-
-lot_frontage_analysis = df.groupby("Neighborhood")[
-    "Lot Frontage"
-].agg(["count", "median"])
-
-print(lot_frontage_analysis.sort_values("count"))
-
-print("\nNeighborhoods with no Lot Frontage data:",
-      lot_frontage_analysis["count"].eq(0).sum())
-
-
-# Inspect identifier columns
-
-print("\n--- Identifier Columns Analysis ---")
+print("\n========== IDENTIFIER COLUMNS ==========")
 
 identifier_columns = ["Order", "PID"]
 
 for column in identifier_columns:
+
     print(f"\n{column}")
+
     print("Unique Values:", df[column].nunique())
     print("Total Records:", len(df))
     print("Missing Values:", df[column].isnull().sum())
-    print("Sample Values:")
-    print(df[column].head(10).tolist())
+    print("Sample Values:", df[column].head(10).tolist())
 
 
-# Target Variable Verification
+# ============================================================
+# STEP 10: TARGET VARIABLE INVESTIGATION
+# ============================================================
 
-print("\n--- Target Variable Analysis ---")
+print("\n========== TARGET VARIABLE ==========")
 
 target = "SalePrice"
 
@@ -359,19 +367,17 @@ print("Unique Values:", df[target].nunique())
 print("\nTarget Statistics:")
 print(df[target].describe())
 
-print("\nMinimum SalePrice:", df[target].min())
+print("Minimum SalePrice:", df[target].min())
 print("Maximum SalePrice:", df[target].max())
 
 
-# Step 17: Train-Test Split
+# ============================================================
+# STEP 11: TRAIN-TEST SPLIT
+# ============================================================
 
-from sklearn.model_selection import train_test_split
-
-# Separate features and target
 X = df.drop(columns=["SalePrice", "Order", "PID"])
 y = df["SalePrice"]
 
-# Split dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
@@ -379,8 +385,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42
 )
 
-# Display split information
-print("\n--- Train-Test Split Results ---")
+print("\n========== TRAIN TEST SPLIT ==========")
 
 print("Original Dataset:", df.shape)
 print("X_train:", X_train.shape)
@@ -389,69 +394,86 @@ print("y_train:", y_train.shape)
 print("y_test:", y_test.shape)
 
 
-# Step 18: Separate Numerical and Categorical Features
+# ============================================================
+# STEP 12: NUMERICAL AND CATEGORICAL FEATURE SEPARATION
+# ============================================================
 
-# Identify numerical columns
 numerical_columns = X_train.select_dtypes(
     include=["number"]
 ).columns.tolist()
 
-# Identify categorical columns
 categorical_columns = X_train.select_dtypes(
     exclude=["number"]
 ).columns.tolist()
 
-print("\n--- Feature Type Analysis ---")
+print("\n========== FEATURE TYPE ANALYSIS ==========")
 
-print("Total Numerical Features:", len(numerical_columns))
-print("Total Categorical Features:", len(categorical_columns))
+print("Numerical Features:", len(numerical_columns))
+print("Categorical Features:", len(categorical_columns))
 
-print("\nNumerical Features:")
+print("\nNumerical Columns:")
 print(numerical_columns)
 
-print("\nCategorical Features:")
+print("\nCategorical Columns:")
 print(categorical_columns)
 
 
+# ============================================================
+# STEP 13: TRAINING DATA MISSING VALUES
+# ============================================================
 
-# Step 18.2: Missing Values in Training Data
+numerical_missing = (
+    X_train[numerical_columns].isnull().sum()
+)
 
-numerical_missing = X_train[numerical_columns].isnull().sum()
-numerical_missing = numerical_missing[numerical_missing > 0]
+numerical_missing = numerical_missing[
+    numerical_missing > 0
+]
 
-categorical_missing = X_train[categorical_columns].isnull().sum()
-categorical_missing = categorical_missing[categorical_missing > 0]
+categorical_missing = (
+    X_train[categorical_columns].isnull().sum()
+)
 
-print("\n--- Numerical Missing Values ---")
+categorical_missing = categorical_missing[
+    categorical_missing > 0
+]
+
+print("\n========== TRAINING MISSING VALUES ==========")
+
+print("\nNumerical Missing Values:")
 print(numerical_missing.sort_values(ascending=False))
 
-print("\nTotal Numerical Columns with Missing Values:",
+print("\nNumerical Columns with Missing Values:",
       len(numerical_missing))
 
-print("\n--- Categorical Missing Values ---")
+print("\nCategorical Missing Values:")
 print(categorical_missing.sort_values(ascending=False))
 
-print("\nTotal Categorical Columns with Missing Values:",
+print("\nCategorical Columns with Missing Values:",
       len(categorical_missing))
 
 
-# Step 18.3: Fireplace Missing Value Investigation
+# ============================================================
+# STEP 14: FIREPLACE INVESTIGATION
+# ============================================================
+
+print("\n========== FIREPLACE INVESTIGATION ==========")
 
 fireplace_missing = X_train["Fireplace Qu"].isnull()
-
-print("\n--- Fireplace Investigation ---")
 
 print("Missing Fireplace Quality:",
       fireplace_missing.sum())
 
 print("\nFireplaces Count for Missing Quality:")
+
 print(
-    X_train.loc[fireplace_missing, "Fireplaces"]
-    .value_counts(dropna=False)
-    .sort_index()
+    X_train.loc[
+        fireplace_missing, "Fireplaces"
+    ].value_counts(dropna=False).sort_index()
 )
 
-print("\nRecords with Missing Quality but Existing Fireplace:")
+print("\nMissing Quality but Existing Fireplace:")
+
 print(
     X_train.loc[
         fireplace_missing & (X_train["Fireplaces"] > 0),
@@ -460,46 +482,52 @@ print(
 )
 
 
-# Step 18.4: Masonry Veneer Investigation
+# ============================================================
+# STEP 15: TRAINING MASONRY INVESTIGATION
+# ============================================================
+
+print("\n========== TRAINING MASONRY INVESTIGATION ==========")
 
 masonry_type_missing = X_train["Mas Vnr Type"].isnull()
 
-print("\n--- Masonry Veneer Investigation ---")
+print("Missing Masonry Type:", masonry_type_missing.sum())
 
-print("Missing Mas Vnr Type:",
-      masonry_type_missing.sum())
+print("\nMasonry Area Values for Missing Types:")
 
-print("\nMas Vnr Area values for missing types:")
-print(
-    X_train.loc[masonry_type_missing, "Mas Vnr Area"]
-    .value_counts(dropna=False)
-    .sort_index()
-)
-
-print("\nRecords with Missing Type and Missing Area:")
 print(
     X_train.loc[
-        masonry_type_missing & X_train["Mas Vnr Area"].isnull(),
-        ["Mas Vnr Type", "Mas Vnr Area", "Exterior 1st", "Exterior 2nd"]
-    ].head(30)
+        masonry_type_missing, "Mas Vnr Area"
+    ].value_counts(dropna=False).sort_index()
 )
 
-print("\nRecords with Missing Type but Positive Area:")
+print("\nMissing Type and Missing Area:")
+
 print(
     X_train.loc[
-        masonry_type_missing & (X_train["Mas Vnr Area"] > 0),
-        ["Mas Vnr Type", "Mas Vnr Area", "Exterior 1st", "Exterior 2nd"]
+        masonry_type_missing
+        & X_train["Mas Vnr Area"].isnull(),
+        ["Mas Vnr Type", "Mas Vnr Area",
+         "Exterior 1st", "Exterior 2nd"]
     ]
 )
 
+print("\nMissing Type but Positive Area:")
 
-# Step 18.5: Masonry Area Median Investigation
+print(
+    X_train.loc[
+        masonry_type_missing
+        & (X_train["Mas Vnr Area"] > 0),
+        ["Mas Vnr Type", "Mas Vnr Area",
+         "Exterior 1st", "Exterior 2nd"]
+    ]
+)
 
 print("\n--- Masonry Area Median Analysis ---")
 
-print("Missing Area:", X_train["Mas Vnr Area"].isnull().sum())
+print("Missing Area:",
+      X_train["Mas Vnr Area"].isnull().sum())
 
-print("Overall Median:",
+print("Overall Training Median:",
       X_train["Mas Vnr Area"].median())
 
 print("Positive Area Median:",
@@ -512,31 +540,305 @@ print("\nArea Statistics:")
 print(X_train["Mas Vnr Area"].describe())
 
 
-# Step 18.6: Missing Masonry Area Investigation
+# ============================================================
+# STEP 16: LOT FRONTAGE TRAINING INVESTIGATION
+# ============================================================
 
-area_missing = X_train["Mas Vnr Area"].isnull()
+print("\n========== LOT FRONTAGE TRAINING INVESTIGATION ==========")
 
-print("\n--- Missing Masonry Area Records ---")
+print("Missing Lot Frontage:",
+      X_train["Lot Frontage"].isnull().sum())
 
-print("Total Missing Area:", area_missing.sum())
+print("\nMissing Values by Neighborhood:")
 
-print("\nMasonry Type for Missing Area:")
 print(
-    X_train.loc[area_missing, "Mas Vnr Type"]
-    .value_counts(dropna=False)
+    X_train.groupby("Neighborhood")["Lot Frontage"]
+    .apply(lambda x: x.isnull().sum())
+    .sort_values(ascending=False)
 )
 
-print("\nOther Property Details:")
+neighborhood_medians = (
+    X_train.groupby("Neighborhood")["Lot Frontage"].median()
+)
+
+global_median = X_train["Lot Frontage"].median()
+
+print("\nNeighborhood-wise Lot Frontage Median:")
+print(neighborhood_medians.sort_values())
+
+print("\nGlobal Training Median:", global_median)
+
+print("\nNeighborhoods without a Median:")
+
+print(neighborhood_medians[neighborhood_medians.isnull()])
+
+print("\nMissing Records in Those Neighborhoods:")
+
 print(
     X_train.loc[
-        area_missing,
-        [
-            "Mas Vnr Type",
-            "Mas Vnr Area",
-            "Exterior 1st",
-            "Exterior 2nd",
-            "Overall Qual",
-            "Year Built"
-        ]
+        X_train["Lot Frontage"].isnull()
+        & X_train["Neighborhood"].isin(
+            neighborhood_medians[
+                neighborhood_medians.isnull()
+            ].index
+        ),
+        "Neighborhood"
+    ].value_counts()
+)
+
+
+# ============================================================
+# STEP 17: REMAINING NUMERICAL MISSING VALUES
+# ============================================================
+
+print("\n========== NUMERICAL MISSING RECORDS ==========")
+
+columns_to_check = [
+    "Garage Yr Blt",
+    "BsmtFin SF 1",
+    "BsmtFin SF 2",
+    "Total Bsmt SF",
+    "Bsmt Unf SF",
+    "Bsmt Full Bath",
+    "Bsmt Half Bath",
+    "Garage Cars",
+    "Garage Area"
+]
+
+for column in columns_to_check:
+
+    missing_records = X_train[
+        X_train[column].isnull()
+    ]
+
+    print(f"\n{column}: {len(missing_records)} missing")
+
+    if not missing_records.empty:
+
+        print(
+            missing_records[
+                [
+                    "Neighborhood",
+                    "Year Built",
+                    "Garage Type",
+                    "Garage Cars",
+                    "Garage Area",
+                    "Total Bsmt SF",
+                    "Bsmt Full Bath",
+                    "Bsmt Half Bath"
+                ]
+            ]
+        )
+
+
+# ============================================================
+# STEP 18: EXCEPTIONAL RECORD INSPECTION
+# ============================================================
+
+print("\n========== EXCEPTIONAL RECORD INSPECTION ==========")
+
+exception_columns = [
+    "Neighborhood",
+    "Year Built",
+    "Overall Qual",
+
+    "Bsmt Qual",
+    "Bsmt Cond",
+    "Bsmt Exposure",
+    "BsmtFin Type 1",
+    "BsmtFin Type 2",
+    "BsmtFin SF 1",
+    "BsmtFin SF 2",
+    "Bsmt Unf SF",
+    "Total Bsmt SF",
+    "Bsmt Full Bath",
+    "Bsmt Half Bath",
+
+    "Garage Type",
+    "Garage Yr Blt",
+    "Garage Finish",
+    "Garage Cars",
+    "Garage Area",
+    "Garage Qual",
+    "Garage Cond"
+]
+
+for index in [1341, 2236]:
+
+    print(f"\n--- Record Index {index} ---")
+
+    print(
+        X_train.loc[
+            index, exception_columns
+        ].to_string()
+    )
+
+
+# ============================================================
+# STEP 19: BASEMENT EXCEPTION DETAILED INSPECTION
+# ============================================================
+
+print("\n========== BASEMENT EXCEPTION: INDEX 1341 ==========")
+
+basement_detail_columns = [
+    "Neighborhood",
+    "Year Built",
+    "Overall Qual",
+    "Foundation",
+    "Bldg Type",
+    "House Style",
+    "1st Flr SF",
+    "2nd Flr SF",
+    "Gr Liv Area"
+]
+
+print(
+    df.loc[
+        1341, basement_detail_columns
+    ].to_string()
+)
+
+print("\nSale Price:")
+print(df.loc[1341, "SalePrice"])
+
+
+# ============================================================
+# STEP 20: FINAL MISSING VALUE SUMMARY
+# ============================================================
+
+print("\n========== FINAL TRAINING MISSING SUMMARY ==========")
+
+print("\nNumerical Missing Values:")
+
+print(
+    X_train[numerical_columns]
+    .isnull()
+    .sum()
+    .loc[lambda x: x > 0]
+    .sort_values(ascending=False)
+)
+
+print("\nCategorical Missing Values:")
+
+print(
+    X_train[categorical_columns]
+    .isnull()
+    .sum()
+    .loc[lambda x: x > 0]
+    .sort_values(ascending=False)
+)
+
+print("\nTotal Numerical Missing Cells:",
+      X_train[numerical_columns].isnull().sum().sum())
+
+print("Total Categorical Missing Cells:",
+      X_train[categorical_columns].isnull().sum().sum())
+
+print("\n========== INVESTIGATION COMPLETE ==========")
+print("No original dataset values have been modified.")
+print("No imputation, encoding, or scaling has been performed.")
+
+
+# ============================================================
+# STEP 21: REMAINING CATEGORICAL MISSING VALUES INVESTIGATION
+# ============================================================
+
+print("\n========== STEP 21: CATEGORICAL INVESTIGATION ==========")
+
+# 1. Pool Investigation
+print("\n--- Pool QC Investigation ---")
+
+pool_missing = X_train["Pool QC"].isnull()
+
+print("Missing Pool QC:", pool_missing.sum())
+
+print("\nPool Area for Missing Pool QC:")
+print(
+    X_train.loc[pool_missing, "Pool Area"]
+    .value_counts(dropna=False)
+    .sort_index()
+)
+
+print("\nMissing Pool QC but Pool Area > 0:")
+print(
+    X_train.loc[
+        pool_missing & (X_train["Pool Area"] > 0),
+        ["Pool QC", "Pool Area"]
     ]
 )
+
+# 2. Garage Investigation
+print("\n--- Garage Investigation ---")
+
+garage_columns = [
+    "Garage Type",
+    "Garage Finish",
+    "Garage Qual",
+    "Garage Cond"
+]
+
+for column in garage_columns:
+    print(f"\n{column}:")
+    print("Missing:", X_train[column].isnull().sum())
+
+print("\nGarage Type vs Garage Cars:")
+print(
+    pd.crosstab(
+        X_train["Garage Type"].fillna("MISSING"),
+        X_train["Garage Cars"].fillna(-1)
+    )
+)
+
+# 3. Basement Investigation
+print("\n--- Basement Investigation ---")
+
+basement_columns = [
+    "Bsmt Qual",
+    "Bsmt Cond",
+    "Bsmt Exposure",
+    "BsmtFin Type 1",
+    "BsmtFin Type 2"
+]
+
+for column in basement_columns:
+    print(f"\n{column}:")
+    print("Missing:", X_train[column].isnull().sum())
+
+print("\nMissing Basement Quality vs Total Basement SF:")
+print(
+    X_train.loc[
+        X_train["Bsmt Qual"].isnull(),
+        [
+            "Bsmt Qual",
+            "Bsmt Cond",
+            "Bsmt Exposure",
+            "BsmtFin Type 1",
+            "BsmtFin Type 2",
+            "Total Bsmt SF"
+        ]
+    ].value_counts(dropna=False)
+)
+
+# 4. Alley Investigation
+print("\n--- Alley Investigation ---")
+print(X_train["Alley"].value_counts(dropna=False))
+
+# 5. Fence Investigation
+print("\n--- Fence Investigation ---")
+print(X_train["Fence"].value_counts(dropna=False))
+
+# 6. Misc Feature Investigation
+print("\n--- Misc Feature Investigation ---")
+print(X_train["Misc Feature"].value_counts(dropna=False))
+
+# 7. Masonry Verification
+print("\n--- Masonry Verification ---")
+print(
+    X_train.groupby(
+        X_train["Mas Vnr Type"].isnull()
+    )["Mas Vnr Area"].agg(
+        ["count", "median", "min", "max"]
+    )
+)
+
+print("\n========== STEP 21 COMPLETE ==========")
