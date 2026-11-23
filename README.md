@@ -1,5 +1,3 @@
-
-
 # House Price Prediction Using Machine Learning
 
 An end-to-end Machine Learning project focused on predicting residential house prices using Python and Scikit-learn.
@@ -62,12 +60,12 @@ House-Price-Prediction-Using-ML/
 - Duplicate row check completed (0 duplicate rows).
 - Statistical summary of `SalePrice` generated.
 - Initial Exploratory Data Analysis (EDA) completed.
-- Data preprocessing phase started.
 - Identifier columns (`Order` and `PID`) identified for exclusion from model features.
 - Target variable `SalePrice` verified (no missing values).
 - Train-test split implemented (80% training, 20% testing).
 - Numerical and categorical features separated.
-- Missing values in training features analyzed.
+- Missing values in training features investigated.
+- Missing-value handling strategies finalized.
 
 ### EDA Analysis Completed
 
@@ -117,7 +115,7 @@ House-Price-Prediction-Using-ML/
 - Train-test split completed (80% training, 20% testing).
 - Training data contains 2,344 records; testing data contains 586 records.
 - Numerical and categorical features separated (36 numerical and 43 categorical).
-- Missing values analyzed in training features (11 numerical columns and 15 categorical columns).
+- Missing values analyzed in training features.
 
 **Missing Value Investigation Completed**
 
@@ -125,16 +123,30 @@ House-Price-Prediction-Using-ML/
 - Basement-related missing values investigated, including properties without basements and exceptional records.
 - Fireplace quality missing values investigated and confirmed to correspond to properties without fireplaces.
 - Masonry veneer missing values investigated, including missing types, zero areas, positive areas, and records where both values are missing.
+- `Lot Frontage` missing values investigated using neighborhood-wise medians.
+- Pool quality missing values investigated using `Pool Area`.
+- Alley, Fence, and Miscellaneous Feature missing values investigated.
+- Remaining numerical and categorical missing values reviewed.
+- Exceptional records identified to avoid blindly treating unknown values as absent features.
+
+**Missing Value Strategy Finalized**
+
+- Use `"None"` for categorical values where the corresponding property feature is confirmed to be absent.
+- Use `"Unknown"` for categorical values that cannot be reliably determined.
+- Use neighborhood-wise median imputation for `Lot Frontage`, with the global training median as a fallback.
+- Use training-data statistics for numerical and categorical imputation where appropriate.
+- Preserve the original dataset without modifying the source CSV.
+- Fit preprocessing transformations on training data only and apply the learned transformations to testing data to prevent data leakage.
 
 **Upcoming Preprocessing Tasks**
 
-- Investigate `Lot Frontage` missing values using training data.
-- Investigate remaining numerical and categorical missing values.
-- Finalize missing-value imputation strategies.
-- Implement numerical and categorical imputation.
+- Create separate working copies of training and testing datasets.
+- Implement numerical and categorical missing-value imputation.
+- Handle exceptional records using the finalized investigation rules.
 - Build a leakage-safe preprocessing pipeline.
 - Categorical feature encoding.
 - Numerical feature scaling where appropriate.
+- Validate the processed datasets.
 - Feature engineering.
 
 ### Upcoming
@@ -144,6 +156,7 @@ House-Price-Prediction-Using-ML/
 - Random Forest Regressor implementation.
 - Model evaluation using MAE, RMSE, and R².
 - Model comparison.
+- Model improvement and hyperparameter tuning.
 - Streamlit application development.
 
 ## Learning Objective
@@ -153,4 +166,3 @@ To build a practical understanding of Machine Learning concepts by developing a 
 ---
 
 **Note:** This project uses US housing data from Ames, Iowa. It is an educational Machine Learning project and is not designed to estimate current Indian property prices.
-
