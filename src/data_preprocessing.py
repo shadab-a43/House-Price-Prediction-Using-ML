@@ -1,15 +1,26 @@
-
 import pandas as pd
+import numpy as np
+
 from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+# Feature Engineering import
+try:
+    from .feature_engineering import add_engineered_features
+except ImportError:
+    from feature_engineering import add_engineered_features
 
 
 # ============================================================
 # STEP 1: LOAD DATASET
 # ============================================================
 
-df = pd.read_csv("data/AmesHousing.csv")
+print("\n========== STEP 1: LOAD DATASET ==========")
 
-print("\n========== DATASET INFORMATION ==========")
+df = pd.read_csv("data/AmesHousing.csv")
 
 print("Dataset Shape:", df.shape)
 print("Total Rows:", df.shape[0])
@@ -17,10 +28,10 @@ print("Total Columns:", df.shape[1])
 
 
 # ============================================================
-# STEP 2: COMPLETE MISSING VALUES ANALYSIS
+# STEP 2: INITIAL MISSING VALUES ANALYSIS
 # ============================================================
 
-print("\n========== MISSING VALUES ANALYSIS ==========")
+print("\n========== STEP 2: MISSING VALUES ANALYSIS ==========")
 
 missing_values = df.isnull().sum()
 missing_values = missing_values[missing_values > 0]
@@ -30,353 +41,25 @@ print(missing_values.sort_values(ascending=False))
 
 print("\nTotal Missing Values:", missing_values.sum())
 
-missing_info = pd.DataFrame({
-    "Data Type": df[missing_values.index].dtypes,
-    "Missing Count": missing_values,
-    "Missing Percentage": (
-        missing_values / len(df) * 100
-    ).round(2)
-})
-
-print("\nMissing Values Data Types:")
-print(missing_info)
-
 
 # ============================================================
-# STEP 3: ELECTRICAL INVESTIGATION
+# STEP 3: TARGET AND FEATURE SEPARATION
 # ============================================================
 
-print("\n========== ELECTRICAL INVESTIGATION ==========")
-
-print("\nElectrical Value Counts:")
-print(df["Electrical"].value_counts())
-
-print("\nMissing Electrical Record:")
-
-print(
-    df[df["Electrical"].isnull()][
-        ["Electrical", "Neighborhood", "Year Built",
-         "Overall Qual", "SalePrice"]
-    ]
-)
-
-
-# ============================================================
-# STEP 4: GARAGE INVESTIGATION
-# ============================================================
-
-print("\n========== GARAGE INVESTIGATION ==========")
-
-garage_missing = df[df["Garage Yr Blt"].isnull()]
-
-print("\nGarage Year Missing Records:")
-
-print(
-    garage_missing[
-        ["Garage Type", "Garage Yr Blt", "Garage Cars",
-         "Garage Area", "Garage Finish"]
-    ].head(10)
-)
-
-print("\nTotal Missing Garage Year:", len(garage_missing))
-
-print("\n--- Garage Missing Value Verification ---")
-
-print("Garage Type Missing:",
-      garage_missing["Garage Type"].isnull().sum())
-
-print("Garage Cars = 0:",
-      (garage_missing["Garage Cars"] == 0).sum())
-
-print("Garage Area = 0:",
-      (garage_missing["Garage Area"] == 0).sum())
-
-print("Garage Finish Missing:",
-      garage_missing["Garage Finish"].isnull().sum())
-
-print("Garage Qual Missing:",
-      garage_missing["Garage Qual"].isnull().sum())
-
-print("Garage Cond Missing:",
-      garage_missing["Garage Cond"].isnull().sum())
-
-print("\n--- Garage Exceptional Records ---")
-
-garage_exceptions = garage_missing[
-    garage_missing["Garage Type"].notnull()
-    | garage_missing["Garage Cars"].ne(0)
-    | garage_missing["Garage Area"].ne(0)
-]
-
-print(
-    garage_exceptions[
-        ["Garage Type", "Garage Yr Blt", "Garage Cars",
-         "Garage Area", "Garage Finish", "Garage Qual",
-         "Garage Cond", "SalePrice"]
-    ].to_string()
-)
-
-
-# ============================================================
-# STEP 5: BASEMENT INVESTIGATION
-# ============================================================
-
-print("\n========== BASEMENT INVESTIGATION ==========")
-
-basement_missing = df[df["Bsmt Qual"].isnull()]
-
-print("\nTotal Missing Basement Quality:",
-      len(basement_missing))
-
-print("\nBasement Missing Records:")
-
-print(
-    basement_missing[
-        ["Bsmt Qual", "Bsmt Cond", "Bsmt Exposure",
-         "BsmtFin Type 1", "Total Bsmt SF",
-         "Bsmt Full Bath", "Bsmt Half Bath", "SalePrice"]
-    ].head(10)
-)
-
-print("\n--- Basement Verification ---")
-
-print("Bsmt Cond Missing:",
-      basement_missing["Bsmt Cond"].isnull().sum())
-
-print("Bsmt Exposure Missing:",
-      basement_missing["Bsmt Exposure"].isnull().sum())
-
-print("BsmtFin Type 1 Missing:",
-      basement_missing["BsmtFin Type 1"].isnull().sum())
-
-print("Total Bsmt SF = 0:",
-      (basement_missing["Total Bsmt SF"] == 0).sum())
-
-print("Bsmt Full Bath = 0:",
-      (basement_missing["Bsmt Full Bath"] == 0).sum())
-
-print("Bsmt Half Bath = 0:",
-      (basement_missing["Bsmt Half Bath"] == 0).sum())
-
-print("\n--- Basement Exceptional Records ---")
-
-basement_exceptions = basement_missing[
-    basement_missing["Total Bsmt SF"].ne(0)
-    | basement_missing["Bsmt Full Bath"].ne(0)
-    | basement_missing["Bsmt Half Bath"].ne(0)
-]
-
-print("Exceptional Records:", len(basement_exceptions))
-
-print(
-    basement_exceptions[
-        ["Bsmt Qual", "Bsmt Cond", "Bsmt Exposure",
-         "BsmtFin Type 1", "BsmtFin SF 1",
-         "BsmtFin SF 2", "Bsmt Unf SF",
-         "Total Bsmt SF", "Bsmt Full Bath",
-         "Bsmt Half Bath", "SalePrice"]
-    ].to_string()
-)
-
-print("\n--- Basement Type 2 Investigation ---")
-
-type2_missing = df[df["BsmtFin Type 2"].isnull()]
-
-type2_exceptions = type2_missing[
-    type2_missing["Bsmt Qual"].notnull()
-    | type2_missing["Total Bsmt SF"].gt(0)
-]
-
-print("Total Type 2 Missing:", len(type2_missing))
-print("Exceptional Records:", len(type2_exceptions))
-
-print(
-    type2_exceptions[
-        ["Bsmt Qual", "BsmtFin Type 1",
-         "BsmtFin Type 2", "Total Bsmt SF", "SalePrice"]
-    ].to_string()
-)
-
-print("\n--- Basement Type 2 Index 444 ---")
-
-print(
-    df.loc[444, [
-        "Bsmt Qual",
-        "BsmtFin Type 1",
-        "BsmtFin SF 1",
-        "BsmtFin Type 2",
-        "BsmtFin SF 2",
-        "Bsmt Unf SF",
-        "Total Bsmt SF"
-    ]].to_string()
-)
-
-
-# ============================================================
-# STEP 6: MASONRY VENEER INVESTIGATION
-# ============================================================
-
-print("\n========== MASONRY VENEER INVESTIGATION ==========")
-
-masonry_missing = df[df["Mas Vnr Type"].isnull()]
-
-print("Missing Masonry Type:", len(masonry_missing))
-
-print("\nMissing Masonry Records:")
-
-print(
-    masonry_missing[
-        ["Mas Vnr Type", "Mas Vnr Area",
-         "Overall Qual", "SalePrice"]
-    ].head(10)
-)
-
-print("\nMas Vnr Area = 0:",
-      (masonry_missing["Mas Vnr Area"] == 0).sum())
-
-masonry_exceptions = masonry_missing[
-    masonry_missing["Mas Vnr Area"].ne(0)
-    | masonry_missing["Mas Vnr Area"].isnull()
-]
-
-print("\n--- Masonry Exceptional Records ---")
-
-print("Exceptional Records:", len(masonry_exceptions))
-
-print(
-    masonry_exceptions[
-        ["Mas Vnr Type", "Mas Vnr Area",
-         "Overall Qual", "Year Built", "SalePrice"]
-    ].to_string()
-)
-
-print("\n--- Masonry Detailed Inspection ---")
-
-print(
-    masonry_exceptions[
-        ["Mas Vnr Type", "Mas Vnr Area",
-         "Exterior 1st", "Exterior 2nd"]
-    ].to_string()
-)
-
-print("\n--- Masonry Area Median Analysis ---")
-
-print("Missing Area:", df["Mas Vnr Area"].isnull().sum())
-
-print("Overall Median:", df["Mas Vnr Area"].median())
-
-print(
-    "Positive Area Median:",
-    df.loc[df["Mas Vnr Area"] > 0, "Mas Vnr Area"].median()
-)
-
-print("\nMasonry Area Statistics:")
-print(df["Mas Vnr Area"].describe())
-
-
-# ============================================================
-# STEP 7: PROPERTY FEATURE INVESTIGATION
-# ============================================================
-
-print("\n========== PROPERTY FEATURE INVESTIGATION ==========")
-
-property_columns = [
-    "Pool QC",
-    "Fence",
-    "Alley",
-    "Misc Feature",
-    "Fireplace Qu"
-]
-
-for column in property_columns:
-
-    print(f"\n--- {column} ---")
-
-    print("Missing:", df[column].isnull().sum())
-
-    print("Existing Values:")
-    print(df[column].value_counts().head(10))
-
-
-# ============================================================
-# STEP 8: LOT FRONTAGE INVESTIGATION
-# ============================================================
-
-print("\n========== LOT FRONTAGE INVESTIGATION ==========")
-
-print("Missing Lot Frontage:",
-      df["Lot Frontage"].isnull().sum())
-
-print("\nMissing Lot Frontage Records:")
-
-print(
-    df[df["Lot Frontage"].isnull()][
-        ["Neighborhood", "Lot Area",
-         "Lot Frontage", "SalePrice"]
-    ].head(10)
-)
-
-lot_frontage_analysis = df.groupby(
-    "Neighborhood"
-)["Lot Frontage"].agg(["count", "median"])
-
-print("\nLot Frontage by Neighborhood:")
-
-print(lot_frontage_analysis.sort_values("count"))
-
-print("\nNeighborhoods with No Lot Frontage Data:")
-
-print(
-    lot_frontage_analysis[
-        lot_frontage_analysis["count"] == 0
-    ]
-)
-
-
-# ============================================================
-# STEP 9: IDENTIFIER COLUMNS INVESTIGATION
-# ============================================================
-
-print("\n========== IDENTIFIER COLUMNS ==========")
-
-identifier_columns = ["Order", "PID"]
-
-for column in identifier_columns:
-
-    print(f"\n{column}")
-
-    print("Unique Values:", df[column].nunique())
-    print("Total Records:", len(df))
-    print("Missing Values:", df[column].isnull().sum())
-    print("Sample Values:", df[column].head(10).tolist())
-
-
-# ============================================================
-# STEP 10: TARGET VARIABLE INVESTIGATION
-# ============================================================
-
-print("\n========== TARGET VARIABLE ==========")
-
-target = "SalePrice"
-
-print("Target Column:", target)
-print("Data Type:", df[target].dtype)
-print("Missing Values:", df[target].isnull().sum())
-print("Unique Values:", df[target].nunique())
-
-print("\nTarget Statistics:")
-print(df[target].describe())
-
-print("Minimum SalePrice:", df[target].min())
-print("Maximum SalePrice:", df[target].max())
-
-
-# ============================================================
-# STEP 11: TRAIN-TEST SPLIT
-# ============================================================
+print("\n========== STEP 3: TARGET SEPARATION ==========")
 
 X = df.drop(columns=["SalePrice", "Order", "PID"])
 y = df["SalePrice"]
+
+print("Feature Shape:", X.shape)
+print("Target Shape:", y.shape)
+
+
+# ============================================================
+# STEP 4: TRAIN-TEST SPLIT
+# ============================================================
+
+print("\n========== STEP 4: TRAIN-TEST SPLIT ==========")
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -385,9 +68,6 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42
 )
 
-print("\n========== TRAIN TEST SPLIT ==========")
-
-print("Original Dataset:", df.shape)
 print("X_train:", X_train.shape)
 print("X_test:", X_test.shape)
 print("y_train:", y_train.shape)
@@ -395,8 +75,46 @@ print("y_test:", y_test.shape)
 
 
 # ============================================================
-# STEP 12: NUMERICAL AND CATEGORICAL FEATURE SEPARATION
+# STEP 5: FEATURE ENGINEERING
 # ============================================================
+
+print("\n========== STEP 5: FEATURE ENGINEERING ==========")
+
+# Same feature engineering function on both datasets.
+X_train = add_engineered_features(X_train)
+X_test = add_engineered_features(X_test)
+
+engineered_features = [
+    "TotalSF",
+    "TotalBathrooms",
+    "HouseAgeAtSale",
+    "RemodAgeAtSale",
+    "TotalPorchSF",
+    "GarageAgeAtSale"
+]
+
+print("New Engineered Features:")
+print(engineered_features)
+
+print("\nTraining Shape:", X_train.shape)
+print("Testing Shape:", X_test.shape)
+
+# Verify that all engineered features exist.
+for column in engineered_features:
+    assert column in X_train.columns
+    assert column in X_test.columns
+
+# Train and test must have identical feature columns.
+assert X_train.columns.equals(X_test.columns)
+
+print("\nFeature Engineering checks passed!")
+
+
+# ============================================================
+# STEP 6: NUMERICAL AND CATEGORICAL FEATURE SEPARATION
+# ============================================================
+
+print("\n========== STEP 6: FEATURE TYPE ANALYSIS ==========")
 
 numerical_columns = X_train.select_dtypes(
     include=["number"]
@@ -406,10 +124,11 @@ categorical_columns = X_train.select_dtypes(
     exclude=["number"]
 ).columns.tolist()
 
-print("\n========== FEATURE TYPE ANALYSIS ==========")
-
 print("Numerical Features:", len(numerical_columns))
 print("Categorical Features:", len(categorical_columns))
+
+print("\nTotal Features:",
+      len(numerical_columns) + len(categorical_columns))
 
 print("\nNumerical Columns:")
 print(numerical_columns)
@@ -419,380 +138,104 @@ print(categorical_columns)
 
 
 # ============================================================
-# STEP 13: TRAINING DATA MISSING VALUES
+# STEP 7: CREATE WORKING COPIES
 # ============================================================
 
-numerical_missing = (
-    X_train[numerical_columns].isnull().sum()
+print("\n========== STEP 7: WORKING COPIES ==========")
+
+X_train_processed = X_train.copy()
+X_test_processed = X_test.copy()
+
+print("Training Shape:", X_train_processed.shape)
+print("Testing Shape:", X_test_processed.shape)
+
+print("\nMissing Values Before Preprocessing:")
+print("Training:", X_train_processed.isnull().sum().sum())
+print("Testing:", X_test_processed.isnull().sum().sum())
+
+
+# ============================================================
+# STEP 8: SPECIAL MISSING VALUE HANDLING
+# ============================================================
+
+print("\n========== STEP 8: SPECIAL MISSING VALUES ==========")
+
+
+# ------------------------------------------------------------
+# 8A: GARAGE
+# ------------------------------------------------------------
+
+print("\n--- Garage Handling ---")
+
+garage_absent_train = (
+    X_train_processed["Garage Cars"].eq(0)
+    & X_train_processed["Garage Area"].eq(0)
 )
 
-numerical_missing = numerical_missing[
-    numerical_missing > 0
-]
-
-categorical_missing = (
-    X_train[categorical_columns].isnull().sum()
+garage_absent_test = (
+    X_test_processed["Garage Cars"].eq(0)
+    & X_test_processed["Garage Area"].eq(0)
 )
 
-categorical_missing = categorical_missing[
-    categorical_missing > 0
-]
-
-print("\n========== TRAINING MISSING VALUES ==========")
-
-print("\nNumerical Missing Values:")
-print(numerical_missing.sort_values(ascending=False))
-
-print("\nNumerical Columns with Missing Values:",
-      len(numerical_missing))
-
-print("\nCategorical Missing Values:")
-print(categorical_missing.sort_values(ascending=False))
-
-print("\nCategorical Columns with Missing Values:",
-      len(categorical_missing))
-
-
-# ============================================================
-# STEP 14: FIREPLACE INVESTIGATION
-# ============================================================
-
-print("\n========== FIREPLACE INVESTIGATION ==========")
-
-fireplace_missing = X_train["Fireplace Qu"].isnull()
-
-print("Missing Fireplace Quality:",
-      fireplace_missing.sum())
-
-print("\nFireplaces Count for Missing Quality:")
-
-print(
-    X_train.loc[
-        fireplace_missing, "Fireplaces"
-    ].value_counts(dropna=False).sort_index()
-)
-
-print("\nMissing Quality but Existing Fireplace:")
-
-print(
-    X_train.loc[
-        fireplace_missing & (X_train["Fireplaces"] > 0),
-        ["Fireplaces", "Fireplace Qu"]
-    ]
-)
-
-
-# ============================================================
-# STEP 15: TRAINING MASONRY INVESTIGATION
-# ============================================================
-
-print("\n========== TRAINING MASONRY INVESTIGATION ==========")
-
-masonry_type_missing = X_train["Mas Vnr Type"].isnull()
-
-print("Missing Masonry Type:", masonry_type_missing.sum())
-
-print("\nMasonry Area Values for Missing Types:")
-
-print(
-    X_train.loc[
-        masonry_type_missing, "Mas Vnr Area"
-    ].value_counts(dropna=False).sort_index()
-)
-
-print("\nMissing Type and Missing Area:")
-
-print(
-    X_train.loc[
-        masonry_type_missing
-        & X_train["Mas Vnr Area"].isnull(),
-        ["Mas Vnr Type", "Mas Vnr Area",
-         "Exterior 1st", "Exterior 2nd"]
-    ]
-)
-
-print("\nMissing Type but Positive Area:")
-
-print(
-    X_train.loc[
-        masonry_type_missing
-        & (X_train["Mas Vnr Area"] > 0),
-        ["Mas Vnr Type", "Mas Vnr Area",
-         "Exterior 1st", "Exterior 2nd"]
-    ]
-)
-
-print("\n--- Masonry Area Median Analysis ---")
-
-print("Missing Area:",
-      X_train["Mas Vnr Area"].isnull().sum())
-
-print("Overall Training Median:",
-      X_train["Mas Vnr Area"].median())
-
-print("Positive Area Median:",
-      X_train.loc[
-          X_train["Mas Vnr Area"] > 0,
-          "Mas Vnr Area"
-      ].median())
-
-print("\nArea Statistics:")
-print(X_train["Mas Vnr Area"].describe())
-
-
-# ============================================================
-# STEP 16: LOT FRONTAGE TRAINING INVESTIGATION
-# ============================================================
-
-print("\n========== LOT FRONTAGE TRAINING INVESTIGATION ==========")
-
-print("Missing Lot Frontage:",
-      X_train["Lot Frontage"].isnull().sum())
-
-print("\nMissing Values by Neighborhood:")
-
-print(
-    X_train.groupby("Neighborhood")["Lot Frontage"]
-    .apply(lambda x: x.isnull().sum())
-    .sort_values(ascending=False)
-)
-
-neighborhood_medians = (
-    X_train.groupby("Neighborhood")["Lot Frontage"].median()
-)
-
-global_median = X_train["Lot Frontage"].median()
-
-print("\nNeighborhood-wise Lot Frontage Median:")
-print(neighborhood_medians.sort_values())
-
-print("\nGlobal Training Median:", global_median)
-
-print("\nNeighborhoods without a Median:")
-
-print(neighborhood_medians[neighborhood_medians.isnull()])
-
-print("\nMissing Records in Those Neighborhoods:")
-
-print(
-    X_train.loc[
-        X_train["Lot Frontage"].isnull()
-        & X_train["Neighborhood"].isin(
-            neighborhood_medians[
-                neighborhood_medians.isnull()
-            ].index
-        ),
-        "Neighborhood"
-    ].value_counts()
-)
-
-
-# ============================================================
-# STEP 17: REMAINING NUMERICAL MISSING VALUES
-# ============================================================
-
-print("\n========== NUMERICAL MISSING RECORDS ==========")
-
-columns_to_check = [
-    "Garage Yr Blt",
-    "BsmtFin SF 1",
-    "BsmtFin SF 2",
-    "Total Bsmt SF",
-    "Bsmt Unf SF",
-    "Bsmt Full Bath",
-    "Bsmt Half Bath",
-    "Garage Cars",
-    "Garage Area"
-]
-
-for column in columns_to_check:
-
-    missing_records = X_train[
-        X_train[column].isnull()
-    ]
-
-    print(f"\n{column}: {len(missing_records)} missing")
-
-    if not missing_records.empty:
-
-        print(
-            missing_records[
-                [
-                    "Neighborhood",
-                    "Year Built",
-                    "Garage Type",
-                    "Garage Cars",
-                    "Garage Area",
-                    "Total Bsmt SF",
-                    "Bsmt Full Bath",
-                    "Bsmt Half Bath"
-                ]
-            ]
-        )
-
-
-# ============================================================
-# STEP 18: EXCEPTIONAL RECORD INSPECTION
-# ============================================================
-
-print("\n========== EXCEPTIONAL RECORD INSPECTION ==========")
-
-exception_columns = [
-    "Neighborhood",
-    "Year Built",
-    "Overall Qual",
-
-    "Bsmt Qual",
-    "Bsmt Cond",
-    "Bsmt Exposure",
-    "BsmtFin Type 1",
-    "BsmtFin Type 2",
-    "BsmtFin SF 1",
-    "BsmtFin SF 2",
-    "Bsmt Unf SF",
-    "Total Bsmt SF",
-    "Bsmt Full Bath",
-    "Bsmt Half Bath",
-
-    "Garage Type",
-    "Garage Yr Blt",
-    "Garage Finish",
-    "Garage Cars",
-    "Garage Area",
-    "Garage Qual",
-    "Garage Cond"
-]
-
-for index in [1341, 2236]:
-
-    print(f"\n--- Record Index {index} ---")
-
-    print(
-        X_train.loc[
-            index, exception_columns
-        ].to_string()
-    )
-
-
-# ============================================================
-# STEP 19: BASEMENT EXCEPTION DETAILED INSPECTION
-# ============================================================
-
-print("\n========== BASEMENT EXCEPTION: INDEX 1341 ==========")
-
-basement_detail_columns = [
-    "Neighborhood",
-    "Year Built",
-    "Overall Qual",
-    "Foundation",
-    "Bldg Type",
-    "House Style",
-    "1st Flr SF",
-    "2nd Flr SF",
-    "Gr Liv Area"
-]
-
-print(
-    df.loc[
-        1341, basement_detail_columns
-    ].to_string()
-)
-
-print("\nSale Price:")
-print(df.loc[1341, "SalePrice"])
-
-
-# ============================================================
-# STEP 20: FINAL MISSING VALUE SUMMARY
-# ============================================================
-
-print("\n========== FINAL TRAINING MISSING SUMMARY ==========")
-
-print("\nNumerical Missing Values:")
-
-print(
-    X_train[numerical_columns]
-    .isnull()
-    .sum()
-    .loc[lambda x: x > 0]
-    .sort_values(ascending=False)
-)
-
-print("\nCategorical Missing Values:")
-
-print(
-    X_train[categorical_columns]
-    .isnull()
-    .sum()
-    .loc[lambda x: x > 0]
-    .sort_values(ascending=False)
-)
-
-print("\nTotal Numerical Missing Cells:",
-      X_train[numerical_columns].isnull().sum().sum())
-
-print("Total Categorical Missing Cells:",
-      X_train[categorical_columns].isnull().sum().sum())
-
-print("\n========== INVESTIGATION COMPLETE ==========")
-print("No original dataset values have been modified.")
-print("No imputation, encoding, or scaling has been performed.")
-
-
-# ============================================================
-# STEP 21: REMAINING CATEGORICAL MISSING VALUES INVESTIGATION
-# ============================================================
-
-print("\n========== STEP 21: CATEGORICAL INVESTIGATION ==========")
-
-# 1. Pool Investigation
-print("\n--- Pool QC Investigation ---")
-
-pool_missing = X_train["Pool QC"].isnull()
-
-print("Missing Pool QC:", pool_missing.sum())
-
-print("\nPool Area for Missing Pool QC:")
-print(
-    X_train.loc[pool_missing, "Pool Area"]
-    .value_counts(dropna=False)
-    .sort_index()
-)
-
-print("\nMissing Pool QC but Pool Area > 0:")
-print(
-    X_train.loc[
-        pool_missing & (X_train["Pool Area"] > 0),
-        ["Pool QC", "Pool Area"]
-    ]
-)
-
-# 2. Garage Investigation
-print("\n--- Garage Investigation ---")
-
-garage_columns = [
+garage_categorical = [
     "Garage Type",
     "Garage Finish",
     "Garage Qual",
     "Garage Cond"
 ]
 
-for column in garage_columns:
-    print(f"\n{column}:")
-    print("Missing:", X_train[column].isnull().sum())
+for column in garage_categorical:
 
-print("\nGarage Type vs Garage Cars:")
-print(
-    pd.crosstab(
-        X_train["Garage Type"].fillna("MISSING"),
-        X_train["Garage Cars"].fillna(-1)
-    )
+    X_train_processed.loc[
+        garage_absent_train & X_train_processed[column].isna(),
+        column
+    ] = "None"
+
+    X_test_processed.loc[
+        garage_absent_test & X_test_processed[column].isna(),
+        column
+    ] = "None"
+
+    X_train_processed.loc[
+        ~garage_absent_train & X_train_processed[column].isna(),
+        column
+    ] = "Unknown"
+
+    X_test_processed.loc[
+        ~garage_absent_test & X_test_processed[column].isna(),
+        column
+    ] = "Unknown"
+
+
+# No garage means garage year is not applicable.
+X_train_processed.loc[
+    garage_absent_train, "Garage Yr Blt"
+] = X_train_processed.loc[
+    garage_absent_train, "Garage Yr Blt"
+].fillna(0)
+
+X_test_processed.loc[
+    garage_absent_test, "Garage Yr Blt"
+] = X_test_processed.loc[
+    garage_absent_test, "Garage Yr Blt"
+].fillna(0)
+
+
+# ------------------------------------------------------------
+# 8B: BASEMENT
+# ------------------------------------------------------------
+
+print("\n--- Basement Handling ---")
+
+basement_absent_train = (
+    X_train_processed["Total Bsmt SF"].eq(0)
 )
 
-# 3. Basement Investigation
-print("\n--- Basement Investigation ---")
+basement_absent_test = (
+    X_test_processed["Total Bsmt SF"].eq(0)
+)
 
-basement_columns = [
+basement_categorical = [
     "Bsmt Qual",
     "Bsmt Cond",
     "Bsmt Exposure",
@@ -800,45 +243,465 @@ basement_columns = [
     "BsmtFin Type 2"
 ]
 
-for column in basement_columns:
-    print(f"\n{column}:")
-    print("Missing:", X_train[column].isnull().sum())
+for column in basement_categorical:
 
-print("\nMissing Basement Quality vs Total Basement SF:")
-print(
-    X_train.loc[
-        X_train["Bsmt Qual"].isnull(),
-        [
-            "Bsmt Qual",
-            "Bsmt Cond",
-            "Bsmt Exposure",
-            "BsmtFin Type 1",
-            "BsmtFin Type 2",
-            "Total Bsmt SF"
-        ]
-    ].value_counts(dropna=False)
-)
+    X_train_processed.loc[
+        basement_absent_train & X_train_processed[column].isna(),
+        column
+    ] = "None"
 
-# 4. Alley Investigation
-print("\n--- Alley Investigation ---")
-print(X_train["Alley"].value_counts(dropna=False))
+    X_test_processed.loc[
+        basement_absent_test & X_test_processed[column].isna(),
+        column
+    ] = "None"
 
-# 5. Fence Investigation
-print("\n--- Fence Investigation ---")
-print(X_train["Fence"].value_counts(dropna=False))
+    X_train_processed.loc[
+        ~basement_absent_train & X_train_processed[column].isna(),
+        column
+    ] = "Unknown"
 
-# 6. Misc Feature Investigation
-print("\n--- Misc Feature Investigation ---")
-print(X_train["Misc Feature"].value_counts(dropna=False))
+    X_test_processed.loc[
+        ~basement_absent_test & X_test_processed[column].isna(),
+        column
+    ] = "Unknown"
 
-# 7. Masonry Verification
-print("\n--- Masonry Verification ---")
-print(
-    X_train.groupby(
-        X_train["Mas Vnr Type"].isnull()
-    )["Mas Vnr Area"].agg(
-        ["count", "median", "min", "max"]
+
+# Confirmed no-basement properties have zero basement measurements.
+basement_numerical = [
+    "BsmtFin SF 1",
+    "BsmtFin SF 2",
+    "Total Bsmt SF",
+    "Bsmt Unf SF",
+    "Bsmt Full Bath",
+    "Bsmt Half Bath"
+]
+
+for column in basement_numerical:
+
+    X_train_processed.loc[
+        basement_absent_train, column
+    ] = X_train_processed.loc[
+        basement_absent_train, column
+    ].fillna(0)
+
+    X_test_processed.loc[
+        basement_absent_test, column
+    ] = X_test_processed.loc[
+        basement_absent_test, column
+    ].fillna(0)
+
+
+# ------------------------------------------------------------
+# 8C: MASONRY VENEER
+# ------------------------------------------------------------
+
+print("\n--- Masonry Veneer Handling ---")
+
+for data in [X_train_processed, X_test_processed]:
+
+    no_veneer = (
+        data["Mas Vnr Type"].isna()
+        & data["Mas Vnr Area"].eq(0)
     )
+
+    unknown_veneer = (
+        data["Mas Vnr Type"].isna()
+        & ~data["Mas Vnr Area"].eq(0)
+    )
+
+    data.loc[no_veneer, "Mas Vnr Type"] = "None"
+    data.loc[unknown_veneer, "Mas Vnr Type"] = "Unknown"
+
+
+# ------------------------------------------------------------
+# 8D: POOL QUALITY
+# ------------------------------------------------------------
+
+print("\n--- Pool Quality Handling ---")
+
+for data in [X_train_processed, X_test_processed]:
+
+    no_pool = data["Pool Area"].eq(0)
+
+    data.loc[
+        data["Pool QC"].isna() & no_pool,
+        "Pool QC"
+    ] = "None"
+
+    data.loc[
+        data["Pool QC"].isna() & ~no_pool,
+        "Pool QC"
+    ] = "Unknown"
+
+
+# ------------------------------------------------------------
+# 8E: FIREPLACE QUALITY
+# ------------------------------------------------------------
+
+print("\n--- Fireplace Quality Handling ---")
+
+for data in [X_train_processed, X_test_processed]:
+
+    no_fireplace = data["Fireplaces"].eq(0)
+
+    data.loc[
+        data["Fireplace Qu"].isna() & no_fireplace,
+        "Fireplace Qu"
+    ] = "None"
+
+    data.loc[
+        data["Fireplace Qu"].isna() & ~no_fireplace,
+        "Fireplace Qu"
+    ] = "Unknown"
+
+
+# ------------------------------------------------------------
+# 8F: OTHER ABSENCE-BASED CATEGORICAL FEATURES
+# ------------------------------------------------------------
+
+print("\n--- Other Absence-Based Features ---")
+
+absence_columns = [
+    "Alley",
+    "Fence",
+    "Misc Feature"
+]
+
+for column in absence_columns:
+
+    X_train_processed[column] = (
+        X_train_processed[column].fillna("None")
+    )
+
+    X_test_processed[column] = (
+        X_test_processed[column].fillna("None")
+    )
+
+
+# ============================================================
+# STEP 9: LOT FRONTAGE IMPUTATION
+# ============================================================
+
+print("\n========== STEP 9: LOT FRONTAGE IMPUTATION ==========")
+
+# Learn neighborhood medians from training data only.
+neighborhood_medians = (
+    X_train_processed.groupby("Neighborhood")["Lot Frontage"]
+    .median()
 )
 
-print("\n========== STEP 21 COMPLETE ==========")
+# Global training median as fallback.
+global_frontage_median = (
+    X_train_processed["Lot Frontage"].median()
+)
+
+# Apply training-derived values to both datasets.
+for data in [X_train_processed, X_test_processed]:
+
+    missing_frontage = data["Lot Frontage"].isna()
+
+    neighborhood_values = (
+        data.loc[missing_frontage, "Neighborhood"]
+        .map(neighborhood_medians)
+    )
+
+    data.loc[missing_frontage, "Lot Frontage"] = (
+        neighborhood_values.fillna(global_frontage_median)
+    )
+
+print("Global Training Median:", global_frontage_median)
+
+print(
+    "Training Missing:",
+    X_train_processed["Lot Frontage"].isna().sum()
+)
+
+print(
+    "Testing Missing:",
+    X_test_processed["Lot Frontage"].isna().sum()
+)
+
+
+# ============================================================
+# STEP 10: FINAL FEATURE TYPE LISTS
+# ============================================================
+
+print("\n========== STEP 10: FINAL FEATURE TYPES ==========")
+
+print("Numerical Features:", len(numerical_columns))
+print("Categorical Features:", len(categorical_columns))
+
+
+# ============================================================
+# STEP 11: NUMERICAL AND CATEGORICAL PIPELINES
+# ============================================================
+
+print("\n========== STEP 11: IMPUTATION PIPELINES ==========")
+
+# Numerical:
+# 1. Missing values -> Training median
+# 2. Scaling -> StandardScaler
+
+numerical_pipeline = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler())
+])
+
+
+# Categorical:
+# 1. Missing values -> Training most frequent category
+# 2. Encoding -> OneHotEncoder
+
+categorical_pipeline = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("encoder", OneHotEncoder(
+        handle_unknown="ignore",
+        sparse_output=False
+    ))
+])
+
+
+# ============================================================
+# STEP 12: COLUMN TRANSFORMER
+# ============================================================
+
+print("\n========== STEP 12: COLUMN TRANSFORMER ==========")
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        (
+            "numerical",
+            numerical_pipeline,
+            numerical_columns
+        ),
+        (
+            "categorical",
+            categorical_pipeline,
+            categorical_columns
+        )
+    ],
+    remainder="drop"
+)
+
+
+# ============================================================
+# STEP 13: FIT AND TRANSFORM
+# ============================================================
+
+print("\n========== STEP 13: FIT AND TRANSFORM ==========")
+
+# Fit only on training data.
+X_train_array = preprocessor.fit_transform(
+    X_train_processed
+)
+
+# Apply learned transformations to testing data.
+X_test_array = preprocessor.transform(
+    X_test_processed
+)
+
+# Get generated feature names.
+feature_names = preprocessor.get_feature_names_out()
+
+# Convert arrays into DataFrames.
+X_train_preprocessed = pd.DataFrame(
+    X_train_array,
+    columns=feature_names,
+    index=X_train.index
+)
+
+X_test_preprocessed = pd.DataFrame(
+    X_test_array,
+    columns=feature_names,
+    index=X_test.index
+)
+
+
+# ============================================================
+# STEP 14: FINAL PREPROCESSING VALIDATION
+# ============================================================
+
+print("\n========== STEP 14: FINAL VALIDATION ==========")
+
+print("\nOriginal Training Shape:", X_train.shape)
+print("Processed Training Shape:", X_train_preprocessed.shape)
+
+print("\nOriginal Testing Shape:", X_test.shape)
+print("Processed Testing Shape:", X_test_preprocessed.shape)
+
+print("\nRemaining Missing Values:")
+print(
+    "Training:",
+    X_train_preprocessed.isna().sum().sum()
+)
+
+print(
+    "Testing:",
+    X_test_preprocessed.isna().sum().sum()
+)
+
+print("\nInfinite Values:")
+print(
+    "Training:",
+    np.isinf(X_train_preprocessed.to_numpy()).sum()
+)
+
+print(
+    "Testing:",
+    np.isinf(X_test_preprocessed.to_numpy()).sum()
+)
+
+print("\nAll Processed Columns Numeric:",
+      all(
+          pd.api.types.is_numeric_dtype(dtype)
+          for dtype in X_train_preprocessed.dtypes
+      )
+)
+
+
+# ============================================================
+# STEP 15: FINAL CONSISTENCY CHECKS
+# ============================================================
+
+print("\n========== STEP 15: FINAL REVIEW ==========")
+
+# 1. Train and test columns must match.
+same_columns = X_train_preprocessed.columns.equals(
+    X_test_preprocessed.columns
+)
+
+print("Same Feature Columns:", same_columns)
+
+
+# 2. Feature names must be unique.
+unique_columns = X_train_preprocessed.columns.is_unique
+
+print("Unique Feature Names:", unique_columns)
+
+
+# 3. Target indexes must match feature indexes.
+train_index_aligned = (
+    X_train_preprocessed.index.equals(y_train.index)
+)
+
+test_index_aligned = (
+    X_test_preprocessed.index.equals(y_test.index)
+)
+
+print("Training Index Aligned:", train_index_aligned)
+print("Testing Index Aligned:", test_index_aligned)
+
+
+# 4. All values must be finite.
+train_finite = np.isfinite(
+    X_train_preprocessed.to_numpy()
+).all()
+
+test_finite = np.isfinite(
+    X_test_preprocessed.to_numpy()
+).all()
+
+print("Training Values Finite:", train_finite)
+print("Testing Values Finite:", test_finite)
+
+
+# 5. Original datasets must remain unchanged.
+original_train_unchanged = (
+    X_train.shape == (len(y_train), len(engineered_features) + X.shape[1])
+)
+
+original_test_unchanged = (
+    X_test.shape == (len(y_test), len(engineered_features) + X.shape[1])
+)
+
+print("Original Training Shape Valid:", original_train_unchanged)
+print("Original Testing Shape Valid:", original_test_unchanged)
+
+
+# 6. Special categorical columns must have no missing values.
+special_categorical = (
+    garage_categorical
+    + basement_categorical
+    + ["Mas Vnr Type", "Pool QC", "Fireplace Qu"]
+    + absence_columns
+)
+
+special_categorical_missing = (
+    X_train_processed[special_categorical].isna().sum().sum()
+    + X_test_processed[special_categorical].isna().sum().sum()
+)
+
+print(
+    "Special Categorical Missing Values:",
+    special_categorical_missing
+)
+
+
+# 7. Lot Frontage must have no missing values.
+lot_frontage_missing = (
+    X_train_processed["Lot Frontage"].isna().sum()
+    + X_test_processed["Lot Frontage"].isna().sum()
+)
+
+print("Lot Frontage Missing Values:", lot_frontage_missing)
+
+
+# 8. Target sizes must remain correct.
+print("\nTraining Target Records:", len(y_train))
+print("Testing Target Records:", len(y_test))
+
+
+# ============================================================
+# STEP 16: AUTOMATIC ASSERTIONS
+# ============================================================
+
+print("\n========== STEP 16: AUTOMATIC CHECKS ==========")
+
+assert same_columns
+assert unique_columns
+
+assert train_index_aligned
+assert test_index_aligned
+
+assert train_finite
+assert test_finite
+
+assert original_train_unchanged
+assert original_test_unchanged
+
+assert special_categorical_missing == 0
+assert lot_frontage_missing == 0
+
+assert len(X_train_preprocessed) == len(y_train)
+assert len(X_test_preprocessed) == len(y_test)
+
+assert X_train_preprocessed.isna().sum().sum() == 0
+assert X_test_preprocessed.isna().sum().sum() == 0
+
+print("All final review checks passed!")
+
+
+# ============================================================
+# STEP 17: FINAL SUMMARY
+# ============================================================
+
+print("\n========== PREPROCESSING SUMMARY ==========")
+
+print("Original Dataset:", df.shape)
+
+print("Training Features:", X_train.shape)
+print("Testing Features:", X_test.shape)
+
+print("Training Target:", y_train.shape)
+print("Testing Target:", y_test.shape)
+
+print("Preprocessed Training:", X_train_preprocessed.shape)
+print("Preprocessed Testing:", X_test_preprocessed.shape)
+
+print("Numerical Input Features:", len(numerical_columns))
+print("Categorical Input Features:", len(categorical_columns))
+
+print("Engineered Features:", len(engineered_features))
+print("Final Encoded Features:", len(feature_names))
+
+print("\n========== PREPROCESSING COMPLETED SUCCESSFULLY ==========")
