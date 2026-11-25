@@ -2,7 +2,7 @@
 
 A beginner-friendly Machine Learning project that predicts residential house prices using Python and Scikit-learn.
 
-The project follows a step-by-step Machine Learning workflow, starting with understanding the dataset and exploring the data, followed by preprocessing, feature engineering, model training, and evaluation.
+The project follows a step-by-step Machine Learning workflow, starting with dataset inspection and exploratory data analysis, followed by data preprocessing, feature engineering, feature selection, model training, and evaluation.
 
 ---
 
@@ -12,7 +12,7 @@ This project uses the **Ames Housing Dataset**, which contains information about
 
 The goal is to understand how different property features — such as living area, overall quality, number of rooms, and garage size — relate to house prices and how Machine Learning models can use this information to make predictions.
 
-**Dataset Overview**
+### Dataset Overview
 
 | Details | Information |
 |---|---|
@@ -44,10 +44,13 @@ House-Price-Prediction-Using-ML/
 │   └── AmesHousing.csv
 │
 ├── notebooks/
+│   ├── __init__.py
 │   ├── 01_dataset_inspection.py
-│   └── 02_feature_engineering_test.py
+│   ├── 02_feature_engineering_test.py
+│   └── 03_feature_selection.py
 │
 ├── src/
+│   ├── __init__.py
 │   ├── data_preprocessing.py
 │   └── feature_engineering.py
 │
@@ -56,7 +59,8 @@ House-Price-Prediction-Using-ML/
 ├── app/
 │
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── .gitignore
 ```
 
 ---
@@ -100,7 +104,7 @@ Potential outliers were retained instead of being removed automatically.
 - Studied special cases involving garages, basements, fireplaces, masonry veneer, pools, and other property features.
 - Finalized appropriate missing-value handling strategies.
 
-**Important decisions:**
+**Important Decisions:**
 
 - Use `None` when a property feature is confirmed to be absent.
 - Use `Unknown` when the actual category cannot be determined.
@@ -130,7 +134,7 @@ Implemented a preprocessing pipeline using Scikit-learn.
 |---|---:|
 | Training Records | 2,344 |
 | Testing Records | 586 |
-| Original Input Features | 85 |
+| Input Features After Feature Engineering | 85 |
 | Final Encoded Features | 330 |
 | Remaining Missing Values | 0 |
 | Infinite Values | 0 |
@@ -139,7 +143,9 @@ Implemented a preprocessing pipeline using Scikit-learn.
 </details>
 
 <details>
-<summary><strong>✅ Phase 4 – Feature Engineering</strong></summary>
+<summary><strong>✅ Phase 4 – Feature Engineering & Feature Selection</strong></summary>
+
+### Feature Engineering
 
 Created six additional features to capture useful information about residential properties.
 
@@ -152,12 +158,59 @@ Created six additional features to capture useful information about residential 
 | `TotalPorchSF` | Combined porch area |
 | `GarageAgeAtSale` | Age of the garage when sold |
 
-**Validation:**
+**Feature Engineering Validation:**
 
 - All six engineered features were tested.
 - Feature calculations were independently verified.
 - Exceptional missing values were preserved instead of being guessed.
 - All feature validation checks passed.
+
+### Feature Selection
+
+Explored multiple feature selection techniques using training and validation data.
+
+- Detected constant features — none found.
+- Investigated low-variance features using VarianceThreshold.
+- Identified highly correlated numerical feature pairs.
+- Analyzed Random Forest feature importance.
+- Applied permutation feature importance.
+- Selected the top 30 candidate features based on permutation importance.
+- Compared three feature groups using the same Random Forest configuration.
+
+**Feature Group Comparison:**
+
+| Feature Group | Feature Count | Validation MAE | Validation R² |
+|---|---:|---:|---:|
+| All Features | 330 | 14,471.14 | 0.917029 |
+| **Top 30 Features** | **30** | **14,411.69** | **0.919755** |
+| Variance Selected | 220 | 14,506.83 | 0.915482 |
+
+### Final Feature Selection Decision
+
+The Top 30 feature group was selected as the primary candidate because it achieved:
+
+- The lowest validation MAE among the three feature groups.
+- The highest validation R² score.
+- A reduction from 330 features to 30 features.
+
+**Selected Feature Composition:**
+
+| Feature Type | Count |
+|---|---:|
+| Numerical Features | 20 |
+| Categorical Features | 10 |
+| Total Selected Features | 30 |
+
+The selected features passed the final verification checks:
+
+- No duplicate feature names.
+- No missing selected features.
+- Training and validation columns correctly aligned.
+- All 30 selected features accounted for.
+
+The final test dataset has not been used for feature selection.
+
+**Note:** These MAE and R² values are validation results from feature-group comparison, not final test-set model evaluation results.
 
 </details>
 
@@ -167,12 +220,12 @@ Created six additional features to capture useful information about residential 
 
 The next stages of the project are:
 
-- [ ] Feature selection and analysis.
 - [ ] Linear Regression implementation.
 - [ ] Random Forest Regressor implementation.
 - [ ] Model evaluation using MAE, RMSE, and R².
 - [ ] Comparison of different models.
 - [ ] Hyperparameter tuning and model improvement.
+- [ ] Final evaluation using the untouched test dataset.
 - [ ] Saving the trained model.
 - [ ] Building an interactive Streamlit application.
 
