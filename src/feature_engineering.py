@@ -1,21 +1,20 @@
 
 import pandas as pd
 
+from sklearn.base import BaseEstimator, TransformerMixin
+
 
 def add_engineered_features(X):
-
-    # Original data ko safe rakhne ke liye copy
     X = X.copy()
 
-    # 1. Total Floor Area
+    # 1. Total Square Footage
     X["TotalSF"] = X[
         ["Total Bsmt SF", "1st Flr SF", "2nd Flr SF"]
     ].sum(axis=1, min_count=3)
 
-    # Identify properties without a basement
+    # Handle basement bathrooms for houses without basements
     no_basement = X["Total Bsmt SF"].eq(0)
 
-    # Missing basement bathroom values ko zero karna
     basement_bath_columns = [
         "Bsmt Full Bath",
         "Bsmt Half Bath"
@@ -26,7 +25,6 @@ def add_engineered_features(X):
     )
 
     # 2. Total Bathrooms
-    
     X["TotalBathrooms"] = (
         X["Full Bath"]
         + (0.5 * X["Half Bath"])
@@ -39,7 +37,7 @@ def add_engineered_features(X):
         X["Yr Sold"] - X["Year Built"]
     )
 
-    # 4. Years Since Remodeling
+    # 4. Remodeling Age at Sale
     X["RemodAgeAtSale"] = (
         X["Yr Sold"] - X["Year Remod/Add"]
     )
@@ -61,7 +59,6 @@ def add_engineered_features(X):
         X["Yr Sold"] - X["Garage Yr Blt"]
     )
 
-    # No-garage properties ke liye garage age = 0
     no_garage = (
         X["Garage Cars"].eq(0)
         & X["Garage Area"].eq(0)
@@ -70,3 +67,15 @@ def add_engineered_features(X):
     X.loc[no_garage, "GarageAgeAtSale"] = 0
 
     return X
+
+
+class FeatureEngineeringTransformer(
+    BaseEstimator,
+    TransformerMixin
+):
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return add_engineered_features(X)
