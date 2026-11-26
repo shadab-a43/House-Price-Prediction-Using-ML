@@ -2,7 +2,7 @@
 
 A beginner-friendly Machine Learning project that predicts residential house prices using Python and Scikit-learn.
 
-The project follows a step-by-step Machine Learning workflow, starting with dataset inspection and exploratory data analysis, followed by data preprocessing, feature engineering, feature selection, model training, and evaluation.
+The project follows a structured Machine Learning workflow, covering dataset inspection, exploratory data analysis, data preprocessing, feature engineering, feature selection, model training, and evaluation.
 
 ---
 
@@ -47,12 +47,16 @@ House-Price-Prediction-Using-ML/
 │   ├── __init__.py
 │   ├── 01_dataset_inspection.py
 │   ├── 02_feature_engineering_test.py
-│   └── 03_feature_selection.py
+│   ├── 03_feature_selection.py
+│   └── 04_leakage_controlled_cv.py
 │
 ├── src/
 │   ├── __init__.py
 │   ├── data_preprocessing.py
-│   └── feature_engineering.py
+│   ├── feature_engineering.py
+│   ├── missing_value_handler.py
+│   ├── lot_frontage_imputer.py
+│   └── preprocessing_pipeline.py
 │
 ├── models/
 │
@@ -60,7 +64,8 @@ House-Price-Prediction-Using-ML/
 │
 ├── README.md
 ├── requirements.txt
-└── .gitignore
+├── .gitignore
+└── .gitattributes
 ```
 
 ---
@@ -70,17 +75,34 @@ House-Price-Prediction-Using-ML/
 The project is being developed step by step, with a focus on understanding each stage of the Machine Learning workflow.
 
 <details>
-<summary><strong>✅ Phase 1 – Dataset Inspection & Exploratory Data Analysis (EDA)</strong></summary>
+<summary><strong>✅ Phase 1 – Project Setup & Dataset Inspection</strong></summary>
 
+- Set up the project structure and Python environment.
 - Loaded and inspected the Ames Housing dataset.
 - Analyzed dataset dimensions, data types, and statistical information.
 - Checked missing values and duplicate records.
+- Identified the target variable, `SalePrice`.
+- Separated input features from the target.
+- Excluded identifier columns (`Order` and `PID`) from model features.
+
+**Dataset Findings:**
+
+- Original dataset contains 2,930 records and 82 columns.
+- The target variable is `SalePrice`.
+- The dataset contains 79 input columns before excluding identifiers.
+
+</details>
+
+<details>
+<summary><strong>✅ Phase 2 – Exploratory Data Analysis (EDA)</strong></summary>
+
 - Studied the `SalePrice` distribution.
-- Explored relationships between house prices and important features.
+- Explored relationships between house prices and important numerical features.
 - Performed correlation analysis.
 - Analyzed numerical and categorical features.
 - Investigated potential outliers using the IQR method.
 - Studied numerical feature skewness.
+- Explored house styles and neighborhood-level price differences.
 
 **Key Findings:**
 
@@ -95,50 +117,56 @@ Potential outliers were retained instead of being removed automatically.
 </details>
 
 <details>
-<summary><strong>✅ Phase 2 – Data Preparation & Missing Value Investigation</strong></summary>
+<summary><strong>✅ Phase 3 – Data Cleaning & Preprocessing</strong></summary>
+
+Implemented a reusable preprocessing pipeline using Scikit-learn.
+
+### Data Preparation
 
 - Separated input features and target variable.
-- Excluded identifier columns (`Order` and `PID`).
-- Implemented an 80/20 train-test split.
-- Investigated missing values in numerical and categorical features.
-- Studied special cases involving garages, basements, fireplaces, masonry veneer, pools, and other property features.
-- Finalized appropriate missing-value handling strategies.
+- Created training, validation, and testing datasets.
+- Preserved the original dataset.
+- Implemented reusable preprocessing transformers.
 
-**Important Decisions:**
+### Missing Value Handling
 
-- Use `None` when a property feature is confirmed to be absent.
-- Use `Unknown` when the actual category cannot be determined.
-- Use neighborhood-wise median imputation for `Lot Frontage`.
-- Calculate imputation statistics using training data only.
+- Created a custom transformer for special missing-value cases.
+- Handled missing values involving garages, basements, fireplaces, masonry veneer, pools, and other property features.
+- Used `None` for confirmed absent property features.
+- Used `Unknown` where the actual category could not be determined.
+- Implemented neighborhood-wise median imputation for `Lot Frontage`.
+- Calculated imputation statistics using training data only.
 
-</details>
+### Preprocessing Pipeline
 
-<details>
-<summary><strong>✅ Phase 3 – Data Preprocessing</strong></summary>
+- Numerical median imputation.
+- Categorical most-frequent imputation.
+- One-Hot Encoding for categorical features.
+- StandardScaler for numerical features.
+- ColumnTransformer and Pipeline integration.
+- Consistent feature transformation across datasets.
 
-Implemented a preprocessing pipeline using Scikit-learn.
+### Leakage Control
 
-- Created separate working copies of training and testing data.
-- Handled special missing-value cases.
-- Implemented numerical median imputation.
-- Implemented categorical most-frequent imputation.
-- Applied One-Hot Encoding to categorical features.
-- Applied StandardScaler to numerical features.
-- Used ColumnTransformer and Pipeline.
-- Fitted preprocessing transformations on training data only.
-- Applied the learned transformations to testing data.
+The preprocessing pipeline is fitted only on the training portion of the data. Validation and testing data are transformed using the learned training statistics.
 
-**Preprocessing Results:**
+A separate leakage-controlled cross-validation workflow was also implemented to ensure preprocessing is fitted independently inside each fold.
+
+### Preprocessing Results
 
 | Check | Result |
 |---|---:|
-| Training Records | 2,344 |
+| Training Records | 1,875 |
+| Validation Records | 469 |
 | Testing Records | 586 |
-| Input Features After Feature Engineering | 85 |
-| Final Encoded Features | 330 |
-| Remaining Missing Values | 0 |
+| Features After Feature Engineering | 85 |
+| Final Preprocessed Features | 321 |
+| Training Missing Values | 0 |
+| Validation Missing Values | 0 |
+| Testing Missing Values | 0 |
 | Infinite Values | 0 |
-| Automatic Validation Checks | Passed |
+| Feature Consistency Checks | Passed |
+| Index Alignment Checks | Passed |
 
 </details>
 
@@ -165,52 +193,71 @@ Created six additional features to capture useful information about residential 
 - Exceptional missing values were preserved instead of being guessed.
 - All feature validation checks passed.
 
-### Feature Selection
+### Feature Analysis
 
-Explored multiple feature selection techniques using training and validation data.
+Explored different feature characteristics and selection approaches.
 
 - Detected constant features — none found.
 - Investigated low-variance features using VarianceThreshold.
 - Identified highly correlated numerical feature pairs.
 - Analyzed Random Forest feature importance.
-- Applied permutation feature importance.
-- Selected the top 30 candidate features based on permutation importance.
-- Compared three feature groups using the same Random Forest configuration.
+- Compared All Features, Variance Selected, and Top 30 feature strategies.
 
-**Feature Group Comparison:**
+### Leakage-Controlled Feature Selection
 
-| Feature Group | Feature Count | Validation MAE | Validation R² |
+Implemented 5-fold cross-validation using raw training data.
+
+For every fold:
+
+- Created a fresh preprocessing pipeline.
+- Fitted preprocessing only on that fold's training data.
+- Applied feature selection using only fold training data.
+- Trained a Random Forest Regressor.
+- Evaluated predictions on the corresponding validation fold.
+
+This ensured preprocessing and feature selection were performed without using the fold validation data.
+
+### Cross-Validation Results
+
+| Feature Strategy | Mean Feature Count | Mean MAE | Mean R² |
 |---|---:|---:|---:|
-| All Features | 330 | 14,471.14 | 0.917029 |
-| **Top 30 Features** | **30** | **14,411.69** | **0.919755** |
-| Variance Selected | 220 | 14,506.83 | 0.915482 |
+| **All Features** | 315.8 | **16,516.21** | 0.8700 |
+| Variance Selected | 219.8 | 16,552.94 | **0.8713** |
+| Top 30 | 30 | 17,051.16 | 0.8683 |
+
+*Results are averages across five cross-validation folds.*
 
 ### Final Feature Selection Decision
 
-The Top 30 feature group was selected as the primary candidate because it achieved:
+**All Features** was selected as the final strategy because it achieved the lowest mean MAE across the five cross-validation folds.
 
-- The lowest validation MAE among the three feature groups.
-- The highest validation R² score.
-- A reduction from 330 features to 30 features.
+- Final selected feature count: 321.
+- Variance Selected reduced the feature count but did not improve mean MAE.
+- Top 30 had a higher mean MAE than the other strategies.
 
-**Selected Feature Composition:**
+### Independent Validation Results
 
-| Feature Type | Count |
+The selected strategy was subsequently checked on the separate validation dataset.
+
+| Metric | Result |
 |---|---:|
-| Numerical Features | 20 |
-| Categorical Features | 10 |
-| Total Selected Features | 30 |
+| Selected Strategy | All Features |
+| Selected Features | 321 |
+| Validation MAE | 14,433.51 |
+| Validation RMSE | 21,163.51 |
+| Validation R² | 0.9177 |
 
-The selected features passed the final verification checks:
+**Final Verification:**
 
 - No duplicate feature names.
 - No missing selected features.
 - Training and validation columns correctly aligned.
-- All 30 selected features accounted for.
+- Target indices correctly aligned.
+- All final feature selection checks passed.
 
-The final test dataset has not been used for feature selection.
+The final test dataset has not been used for feature selection or validation.
 
-**Note:** These MAE and R² values are validation results from feature-group comparison, not final test-set model evaluation results.
+**Note:** Cross-validation and validation metrics are not final test-set evaluation results.
 
 </details>
 
@@ -228,6 +275,7 @@ The next stages of the project are:
 - [ ] Final evaluation using the untouched test dataset.
 - [ ] Saving the trained model.
 - [ ] Building an interactive Streamlit application.
+- [ ] Final documentation and GitHub review.
 
 ---
 
@@ -238,7 +286,9 @@ Through this project, I aim to understand:
 - How to inspect and explore a real-world dataset.
 - How to handle missing values and unusual records.
 - How to prepare data for Machine Learning.
+- How to build reusable preprocessing pipelines.
 - How feature engineering and feature selection work.
+- How to prevent data leakage during model development.
 - How regression algorithms make predictions.
 - How to evaluate and improve Machine Learning models.
 - How to build a simple application using a trained model.
@@ -249,4 +299,6 @@ Through this project, I aim to understand:
 
 This project uses historical US housing data from Ames, Iowa. It is intended for educational purposes and is not designed to estimate current property prices in India.
 
-**The project is being developed step by step as a learning exercise.**
+The project is being developed step by step as a learning exercise.
+
+The `models/` and `app/` directories are reserved for upcoming model development and application deployment.
