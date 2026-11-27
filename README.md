@@ -2,7 +2,7 @@
 
 A beginner-friendly Machine Learning project that predicts residential house prices using Python and Scikit-learn.
 
-The project follows a structured Machine Learning workflow, covering dataset inspection, exploratory data analysis, data preprocessing, feature engineering, feature selection, model training, and evaluation.
+The project follows a structured Machine Learning workflow, covering dataset inspection, exploratory data analysis, data preprocessing, feature engineering, feature selection, model training, evaluation, and hyperparameter tuning.
 
 ---
 
@@ -48,7 +48,9 @@ House-Price-Prediction-Using-ML/
 │   ├── 01_dataset_inspection.py
 │   ├── 02_feature_engineering_test.py
 │   ├── 03_feature_selection.py
-│   └── 04_leakage_controlled_cv.py
+│   ├── 04_leakage_controlled_cv.py
+│   ├── 05_model_training.py
+│   └── 06_hyperparameter_tuning.py
 │
 ├── src/
 │   ├── __init__.py
@@ -59,6 +61,8 @@ House-Price-Prediction-Using-ML/
 │   └── preprocessing_pipeline.py
 │
 ├── models/
+│   ├── model_comparison.csv
+│   └── hyperparameter_tuning_results.csv
 │
 ├── app/
 │
@@ -195,8 +199,6 @@ Created six additional features to capture useful information about residential 
 
 ### Feature Analysis
 
-Explored different feature characteristics and selection approaches.
-
 - Detected constant features — none found.
 - Investigated low-variance features using VarianceThreshold.
 - Identified highly correlated numerical feature pairs.
@@ -215,29 +217,25 @@ For every fold:
 - Trained a Random Forest Regressor.
 - Evaluated predictions on the corresponding validation fold.
 
-This ensured preprocessing and feature selection were performed without using the fold validation data.
-
 ### Cross-Validation Results
 
 | Feature Strategy | Mean Feature Count | Mean MAE | Mean R² |
 |---|---:|---:|---:|
 | **All Features** | 315.8 | **16,516.21** | 0.8700 |
-| Variance Selected | 219.8 | 16,552.94 | **0.8713** |
+| Variance Selected | 219.8 | 16,552.94 | 0.8713 |
 | Top 30 | 30 | 17,051.16 | 0.8683 |
 
 *Results are averages across five cross-validation folds.*
 
 ### Final Feature Selection Decision
 
-**All Features** was selected as the final strategy because it achieved the lowest mean MAE across the five cross-validation folds.
+**All Features** was selected because it achieved the lowest mean MAE across the five cross-validation folds.
 
 - Final selected feature count: 321.
 - Variance Selected reduced the feature count but did not improve mean MAE.
 - Top 30 had a higher mean MAE than the other strategies.
 
 ### Independent Validation Results
-
-The selected strategy was subsequently checked on the separate validation dataset.
 
 | Metric | Result |
 |---|---:|
@@ -247,17 +245,92 @@ The selected strategy was subsequently checked on the separate validation datase
 | Validation RMSE | 21,163.51 |
 | Validation R² | 0.9177 |
 
-**Final Verification:**
+The final test dataset has not been used for feature selection or model selection.
 
-- No duplicate feature names.
-- No missing selected features.
-- Training and validation columns correctly aligned.
-- Target indices correctly aligned.
-- All final feature selection checks passed.
+</details>
 
-The final test dataset has not been used for feature selection or validation.
+<details>
+<summary><strong>✅ Phase 5 – Model Training</strong></summary>
 
-**Note:** Cross-validation and validation metrics are not final test-set evaluation results.
+Implemented and trained two regression models using the preprocessed training data.
+
+### Models Implemented
+
+1. Linear Regression
+2. Random Forest Regressor
+
+Both models were evaluated on the separate validation dataset.
+
+### Validation Results
+
+| Model | MAE | RMSE | R² Score |
+|---|---:|---:|---:|
+| Linear Regression | 15,703.67 | 21,202.64 | 0.9174 |
+| Random Forest | **14,433.51** | **21,163.51** | **0.9177** |
+
+Random Forest performed better than Linear Regression across all three reported validation metrics.
+
+</details>
+
+<details>
+<summary><strong>✅ Phase 6 – Model Evaluation</strong></summary>
+
+Evaluated model predictions using visualizations and residual analysis.
+
+### Evaluation Visualizations
+
+- Actual vs Predicted plots for Linear Regression and Random Forest.
+- Residuals vs Predicted plots.
+- Residual distribution histograms.
+- Reference line at zero for residual analysis.
+
+### Evaluation Concepts
+
+- Actual vs Predicted plots help compare predicted prices with actual prices.
+- Residuals represent the difference between actual and predicted prices.
+- Residual plots help inspect prediction errors and identify possible patterns.
+
+</details>
+
+<details>
+<summary><strong>✅ Phase 7 – Hyperparameter Tuning</strong></summary>
+
+Applied GridSearchCV to improve the Random Forest model.
+
+### Tuning Setup
+
+- Used a complete Scikit-learn Pipeline containing preprocessing and Random Forest.
+- Used 5-fold cross-validation.
+- Optimized negative Mean Absolute Error.
+- Evaluated 16 hyperparameter combinations across 5 folds (80 fits).
+
+### Hyperparameters Tested
+
+| Parameter | Values |
+|---|---|
+| `n_estimators` | 100, 200 |
+| `max_depth` | None, 20 |
+| `min_samples_split` | 2, 5 |
+| `min_samples_leaf` | 1, 2 |
+
+### Best Parameters
+
+- `n_estimators`: 200
+- `max_depth`: 20
+- `min_samples_split`: 2
+- `min_samples_leaf`: 1
+
+### Tuning Results
+
+| Metric | Original Random Forest | Tuned Random Forest |
+|---|---:|---:|
+| MAE | 14,433.51 | **14,244.59** |
+| RMSE | 21,163.51 | **20,705.88** |
+| R² Score | 0.9177 | **0.9212** |
+
+The tuned Random Forest improved all three validation metrics compared with the original Random Forest.
+
+**Result:** The Tuned Random Forest was selected as the final candidate model for untouched test-set evaluation.
 
 </details>
 
@@ -265,16 +338,10 @@ The final test dataset has not been used for feature selection or validation.
 
 ## 🔄 What's Next?
 
-The next stages of the project are:
-
-- [ ] Linear Regression implementation.
-- [ ] Random Forest Regressor implementation.
-- [ ] Model evaluation using MAE, RMSE, and R².
-- [ ] Comparison of different models.
-- [ ] Hyperparameter tuning and model improvement.
 - [ ] Final evaluation using the untouched test dataset.
-- [ ] Saving the trained model.
-- [ ] Building an interactive Streamlit application.
+- [ ] Save the final trained model.
+- [ ] Prepare the model for deployment.
+- [ ] Build an interactive Streamlit application.
 - [ ] Final documentation and GitHub review.
 
 ---
@@ -291,6 +358,7 @@ Through this project, I aim to understand:
 - How to prevent data leakage during model development.
 - How regression algorithms make predictions.
 - How to evaluate and improve Machine Learning models.
+- How to tune hyperparameters using cross-validation.
 - How to build a simple application using a trained model.
 
 ---
@@ -301,4 +369,4 @@ This project uses historical US housing data from Ames, Iowa. It is intended for
 
 The project is being developed step by step as a learning exercise.
 
-The `models/` and `app/` directories are reserved for upcoming model development and application deployment.
+The `models/` and `app/` directories are used for model outputs and upcoming application development.
